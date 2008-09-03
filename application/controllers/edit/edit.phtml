@@ -1,0 +1,219 @@
+<?php
+// parameters:
+
+// $tileSize= array(width, height);
+// $tileCount = nn; // number of 'different' tiles
+// $tilePrefix = "tileimages/";
+// $tilePostfix = ".gif";
+// $mapId = "name of the map";
+// $tileIds = array(tileIds);
+// $mapWidth  =
+// $mapHeight =
+?>
+
+<html>
+<head>
+<base href="<?= $mvcHref ?>" />
+
+<script src='js/prototype.js'     type='text/javascript'></script>
+<script src='js/scriptaculous.js' type='text/javascript'></script>
+<!--  <script src='js/gb.js?v=3'        type='text/javascript'></script> -->
+<!--  <script src='js/tablesort.js'     type='text/javascript'></script> -->
+<!--  <script src='js/accordion.js'     type='text/javascript'></script> -->
+
+<meta http-equiv='Content-Type'        content='text/html; charset=ISO-8859-1'>
+<meta http-equiv='Content-Script-Type' content='text/javascript'>
+<meta http-equiv='Content-Style-Type'  content='text/css'>
+<meta http-equiv='Content-Language'    content='fr'>
+
+
+<style>
+p, blockquote, ul, h1, h2, h3, h4, h5, h6 {
+    margin: 0.2em;
+    padding: 0.3em;
+}
+ul {
+    padding-left: 1.7em;
+}
+.map {
+    border-collapse: collapse;
+    border: none;
+}
+.map td {
+    margin: 0;
+    padding: 0;
+    width: <?php echo $tileSize[0]; ?>px;
+    height: <?php echo $tileSize[1]; ?>px;
+    text-align: center;
+    color: white;
+    font-size: smaller;
+}
+.map td img, #map td a {
+    border: none;
+}
+</style>
+<script type="text/javascript">//<![CDATA[
+// XHR for IE, (source: http://en.design-noir.de/webdev/JS/XMLHttpRequest-IE/ )
+/*@cc_on @if (@_win32 && @_jscript_version >= 5)
+  if (!window.XMLHttpRequest)
+    window.XMLHttpRequest = function() {
+      return new ActiveXObject('Microsoft.XMLHTTP')
+    }
+  @end @*/
+
+var tileIds = [<?php echo implode(",", $tileIds); ?>];
+var tileCount = <?php echo $tileCount; ?>;
+var tilePrefix = '<?php echo $tilePrefix; ?>';
+var tilePostfix = '<?php echo $tilePostfix; ?>';
+var mapId = '<?php echo $mapId; ?>';
+var currentTool = 3;
+
+function saveMapTiles( mapId, tileIds ) {
+    var data = "mapid=" + mapId + "&tileids=" + tileIds.join(",");
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST","savetiles.php",false);
+    xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+    xhr.send(data);
+    if( xhr.status == 200 ) {
+  alert( "Map saved successfully" );
+    } else {
+  alert( "Could not save map" );
+    }
+}
+
+function save() {
+    saveMapTiles( mapId, tileIds );
+}
+
+function setCellTileId( cellId, tileId ) {
+    tileIds[cellId] = tileId;
+    document.getElementById("cell-" + cellId).
+  setAttribute("background", tilePrefix + tileId + tilePostfix);
+}
+function getCellTileId( cellId ) {
+    return tileIds[cellId];
+}
+
+function cellClicked( cellId ) {
+//    var t = getCellTileId(cellId);
+//    t = (t + 1) % tileCount;
+    t = currentTool;
+    setCellTileId(cellId, t);
+}
+
+function toolClicked( toolNum )
+{
+  currentTool = toolNum;
+}
+
+//]]></script>
+<title><?php echo "$mapId Edit" ?></title>
+</head>
+<body>
+
+
+<table class="map">
+
+<tr>
+  <td background="tileimages/1.gif" onclick="toolClicked(1)"/>
+  <td background="tileimages/2.gif" onclick="toolClicked(2)"/>
+  <td background="tileimages/3.gif" onclick="toolClicked(3)"/>
+  <td background="tileimages/4.gif" onclick="toolClicked(4)"/>
+  <td background="tileimages/5.gif" onclick="toolClicked(5)"/>
+  <td background="tileimages/6.gif" onclick="toolClicked(6)"/>
+  <td background="tileimages/7.gif" onclick="toolClicked(7)"/>
+  <td background="tileimages/8.gif" onclick="toolClicked(8)"/>
+  <td background="tileimages/9.gif" onclick="toolClicked(9)"/>
+  <td background="tileimages/10.gif" onclick="toolClicked(10)"/>
+  <td background="tileimages/11.gif" onclick="toolClicked(11)"/>
+  <td background="tileimages/12.gif" onclick="toolClicked(12)"/>
+</tr>
+</table>
+
+<table class="map">
+<?php
+
+echo "<tr>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+for ($x=0; $x<$mapWidth; $x++)
+{
+  $dig="";
+  if (($x%10)==0)$dig=$x/10;
+  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+}
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "</tr>\n";
+echo "<tr>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+for ($x=0; $x<$mapWidth; $x++)
+{
+  $dig=$x%10;
+  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+}
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "</tr>\n";
+
+for( $y=0; $y<$mapHeight; ++$y )
+{
+  echo "<tr>\n";
+  $dig="";
+  if (($y%10)==0)$dig=$y/10;
+  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+  $dig=$y%10;
+  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+  for( $x=0; $x<$mapWidth; ++$x )
+  {
+    $cellId = $x+$y*$mapWidth;
+    $tileId = $tileIds[$cellId];
+    echo "\t<td id=\"cell-$cellId\"";
+    echo " background=\"{$tilePrefix}{$tileId}{$tilePostfix}\"";
+    echo " onclick=\"cellClicked($cellId)\"";
+    echo "/>\n";
+  }
+  $dig="";
+  if (($y%10)==0)$dig=$y/10;
+  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+  $dig=$y%10;
+  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+  echo "</tr>\n";
+}
+
+echo "<tr>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+for ($x=0; $x<$mapWidth; $x++)
+{
+  $dig="";
+  if (($x%10)==0)$dig=$x/10;
+  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+}
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "</tr>\n";
+echo "<tr>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+for ($x=0; $x<$mapWidth; $x++)
+{
+  $dig=$x%10;
+  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+}
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+echo "</tr>\n";
+
+
+
+
+?>
+</table>
+
+<button onclick="save()">Save tiles</button>
+
+</body>
+</html>

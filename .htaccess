@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteRule         ^(.*)     html/$1    [last]
+allow from all

@@ -1,0 +1,3 @@
+RewriteEngine   On
+RewriteRule     !\.(js|ico|gif|jpg|png|css|php)$        index.php [L]
+allow from all
