@@ -19,9 +19,13 @@ $args=$mvc->getArgs();
 $action=$args->get();
 if ($action=="save") {
     $args->remove();
-    echo "<pre>";
-    print_r($_POST);
-    exit(1);
+    $auth=Auth::singleton();
+    if ($auth->getLogin()===false) {
+        echo "access denied";
+    } else {
+        print_r($_POST);
+    }
+    exit(0);
 }
 
 $dungeonName=$args->remove("dungeonname");

@@ -3,7 +3,10 @@
 
 // parameters:
 /* @var $login */
+/* @var $urlLogout */
 
 ?>
 
-Vous êtes connecté en tant que : <?= htmlentities($login) ?>
+You're logged as : <?= htmlentities($login) ?>
+<br />
+<?= ajaxSubmit($urlLogout, "'authtargetid'", "logout", "{}") ?>
