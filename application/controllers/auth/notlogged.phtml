@@ -1,0 +1,21 @@
+<?php
+// vue appelée par edit.phtml dans id=authtargetid
+
+// parameters:
+/* @var $form     Gb_Form */
+/* @var $urlLogin string */
+
+$form
+    ->setElementParam("login",    "preInput",  "Login :")
+    ->setElementParam("login",    "postInput", "<br />")
+    ->setElementParam("password", "preInput",  "Password :")
+;
+?>
+
+<script type='text/javascript'>
+<?= $form->getJavascript() ?>
+</script>
+
+<?= $form->getHtml() ?>
+
+<?= ajaxSubmit($urlLogin, "'authtargetid'", "submit", "{GBFORM_login:\$F('GBFORM_login'), GBFORM_password: \$F('GBFORM_password')}") ?>

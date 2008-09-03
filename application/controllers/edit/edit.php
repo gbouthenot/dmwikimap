@@ -1,35 +1,8 @@
 <?
 require_once("Gb/Session.php");
-Gb_Session::session_start();
-?>
-
-
-
-<?php
-
+require_once("models/Auth.php");
+require_once("models/Map.php");
 $mvc=Gb_Mvc::singleton();
-
-//echo "<pre>";
-
-//$auth=Gb_Session::get("auth");
-//if ($auth===false) {
-//    $mvc->callController("auth");
-//    $auth=Gb_Session::get("auth");
-//}
-
-//if ($auth!==false) {
-//    //print_r($auth);
-//} else {
-//    echo ajaxSubmit("/", 'ici', "montext", "{}");
-//    
-//    echo "<div id='ici'>ici</div>\n";
-//    
-//    echo "niet";
-//}
-    
-
-//exit(0);
-
 
 //select user_id, user_name from user where UPPER(user_name)=UPPER('gilles') and user_password=MD5(CONCAT(user_id, "-", MD5("********")));
 
@@ -40,10 +13,16 @@ $mvc=Gb_Mvc::singleton();
 // $mvcArgs
 
 
-require_once("models/Map.php");
-
 $mvc=Gb_Mvc::singleton();
 $args=$mvc->getArgs();
+
+$action=$args->get();
+if ($action=="save") {
+    $args->remove();
+    echo "<pre>";
+    print_r($_POST);
+    exit(1);
+}
 
 $dungeonName=$args->remove("dungeonname");
 $level=$args->remove("levelnumber");
@@ -51,8 +30,18 @@ $level=$args->remove("levelnumber");
 if ($dungeonName===null) { $dungeonName=$args->remove(); }
 if ($level===null) { $level=$args->remove(); }
 
+$action=$args->remove();
+if ($action=="save") {
+    echo "<pre>";
+    print_r($_POST);
+    exit(1);
+}
+
+
 $map=new Map($dungeonName, $level);
 $mapSize=$map->getSize();
+
+$urlSave=$mvc->getUrl(array("edit","save"));
 
 
 $tileSize=array(16, 16);

@@ -1,10 +1,6 @@
 <?php
 
-
-
 require_once("Gb/Db.php");
-
-$m=new Map("Conflux", 0);
 
 
 Class Map
@@ -153,6 +149,7 @@ Class Map
     
     public function __construct($dungeonName, $levelNumber)
     {
+        $dungeonName=ucfirst(strtolower($dungeonName));
         $this->_dungeonName=$dungeonName;
         $this->_levelNumber=$levelNumber;
         $this->_initDb();

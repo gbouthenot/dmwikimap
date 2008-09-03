@@ -5,10 +5,16 @@
 // $tileCount = nn; // number of 'different' tiles
 // $tilePrefix = "tileimages/";
 // $tilePostfix = ".gif";
+// $dungeonname
+// $level
 // $mapId = "name of the map";
 // $tileIds = array(tileIds);
 // $mapWidth  =
 // $mapHeight =
+/* @var $urlSave String */
+
+$mvc=Gb_Mvc::singleton();
+
 ?>
 
 <html>
@@ -17,7 +23,7 @@
 
 <script src='js/prototype.js'     type='text/javascript'></script>
 <script src='js/scriptaculous.js' type='text/javascript'></script>
-<!--  <script src='js/gb.js?v=3'        type='text/javascript'></script> -->
+<script src='js/gb.js?v=3'        type='text/javascript'></script>
 <!--  <script src='js/tablesort.js'     type='text/javascript'></script> -->
 <!--  <script src='js/accordion.js'     type='text/javascript'></script> -->
 
@@ -28,6 +34,26 @@
 
 
 <style>
+ select                   {background:#eee; border:1px solid #999; padding:0px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
+}input.text               {background:#eee; border:1px solid #999; padding:1px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
+}textarea                 {background:#eee; border:1px solid #999; padding:1px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
+}input.password           {background:#eee; border:1px solid #999; padding:1px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
+}input.submit             {border:1px outset #999; padding:1px 20px; font-size:80%; font-weight:bold; cursor:pointer;
+                           background:url(img/submitbg.gif) repeat-x left 20% #eee; color:#444;
+}input:hover.submit       {border:1px inset #999;
+                           background:url(img/submitbg.gif) repeat-x left 0% #fff;
+}input:active.submit      {color:#000; padding:2px 19px 0px 21px; border:1px inset #999;
+}.GBFORM                  {
+}.GBFORM .OK              {padding:2px; margin:0px;
+}.GBFORM .NOK             {border:2px solid #f00; padding:0px; margin:0px;
+}.GBFORM .NOK .ERROR      {color:#f00;
+}.GBFORM .PRE             {
+}.GBFORM .POST            {font-style:italic; font-size:90%;
+}.GBFORM_SPAN_OK          {display:inline; padding:2px; margin:0px;
+}.GBFORM_SPAN_NOK         {display:inline; border:2px solid #f00; padding:0px; margin:0px;
+}.GBFORM_SPAN_ERROR       {display:inline; color:#f00;
+}
+
 p, blockquote, ul, h1, h2, h3, h4, h5, h6 {
     margin: 0.2em;
     padding: 0.3em;
@@ -51,6 +77,21 @@ ul {
 .map td img, #map td a {
     border: none;
 }
+
+img {
+    border:0;
+}
+.authtarget{
+    border:1px solid #000;
+    margin:5px;
+    padding:3px;
+    background:#eee;
+    float:left;
+}
+.clear{
+    clear:both;
+}
+
 </style>
 <script type="text/javascript">//<![CDATA[
 // XHR for IE, (source: http://en.design-noir.de/webdev/JS/XMLHttpRequest-IE/ )
@@ -66,25 +107,9 @@ var tileCount = <?php echo $tileCount; ?>;
 var tilePrefix = '<?php echo $tilePrefix; ?>';
 var tilePostfix = '<?php echo $tilePostfix; ?>';
 var mapId = '<?php echo $mapId; ?>';
+var dungeonname = '<?php echo $dungeonName; ?>';
+var level = '<?php echo $level; ?>';
 var currentTool = 3;
-
-function saveMapTiles( mapId, tileIds ) {
-    var data = "mapid=" + mapId + "&tileids=" + tileIds.join(",");
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST","savetiles.php",false);
-    xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-    xhr.send(data);
-    if( xhr.status == 200 ) {
-  alert( "Map saved successfully" );
-    } else {
-  alert( "Could not save map" );
-    }
-}
-
-function save() {
-    saveMapTiles( mapId, tileIds );
-}
 
 function setCellTileId( cellId, tileId ) {
     tileIds[cellId] = tileId;
@@ -213,7 +238,16 @@ echo "</tr>\n";
 ?>
 </table>
 
-<button onclick="save()">Save tiles</button>
+<div id='authtargetid' class='authtarget'>
+    <? $mvc->callController("auth");  ?>
+</div>
+
+<?= ajaxSubmit($urlSave, "'savetargetid'", "Save tiles", "{dungeonname:dungeonname, levelnumber:level, tileIds:tileIds.join(',')}") ?>
+
+<div id='savetargetid' class='savetarget'>
+</div>
+
+<div class='clear'></div>
 
 </body>
 </html>
