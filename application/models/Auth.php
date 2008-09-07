@@ -67,8 +67,28 @@ Class Auth
             return false;
         } elseif (is_array($auth) && isset($auth["login"])) {
             return $auth["login"];
+        } else {
+            return false;
         }
     }
+    
+    /**
+     * renvoie l'id de l'utilisateur ou false si non loggué
+     *
+     * @return string|false
+     */
+    public function getId()
+    {
+        $auth=Gb_Session::get("auth");
+        if ($auth===false) {
+            return false;
+        } elseif (is_array($auth) && isset($auth["id"])) {
+            return $auth["id"];
+        } else {
+            return false;
+        }
+    }
+    
     
     /**
      * @param string $username
@@ -78,13 +98,13 @@ Class Auth
     {
         $db=$this->_getDb();
         
-        $sql="select user_name from user WHERE LOWER(user_name)=LOWER(?) AND user_password=MD5(CONCAT(user_id,'-',MD5(?)))";
-        $login=$db->retrieve_one($sql, array($username, $password), "user_name");
+        $sql="select user_id, user_name from user WHERE LOWER(user_name)=LOWER(?) AND user_password=MD5(CONCAT(user_id,'-',MD5(?)))";
+        $login=$db->retrieve_one($sql, array($username, $password));
         
         if ($login===false) {
             return false;
         } else {
-            Gb_Session::set("auth", array("login"=>$login));
+            Gb_Session::set("auth", array("id"=>$login["user_id"], "login"=>$login["user_name"]));
             return $login;
         }
     }

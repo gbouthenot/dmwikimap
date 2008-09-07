@@ -19,26 +19,31 @@ if ($dungeonName===null) { $dungeonName=$args->remove(); }
 if ($level===null) { $level=$args->remove(); }
 
 $map=new Map($dungeonName, $level);
+
+$comments=$map->getComments();
+
+$dungeonName=$map->getDungeonName();
+$level=$map->getLevelNumber();
 $mapSize=$map->getSize();
+$tileIds=$map->getCells();
+$mapWidth =$map->getWidth();
+$mapHeight=$map->getHeight();
+$aNotes=$map->getNotes();
+$mapId = ucfirst($dungeonName)." / Level ".$level;
 
 
 $tileSize=array(16, 16);
 $tileCount = 10;                    // number of 'different' tiles
 $tilePrefix = "tileimages/";
 $tilePostfix = ".gif";
-$mapId = ucfirst($map->getDungeonName())." / Level ".$map->getLevelNumber();
-$tileIds=$map->getCells();
-$mapWidth =$map->getWidth();
-$mapHeight=$map->getHeight();
-$aNotes=$map->getNotes();
-$url=$mvcRootUrl.$mvcController."/".$dungeonName."/"."@@@level@@@";
 
+$url=$mvc->getUrl("view"."/".$dungeonName."/"."@@@level@@@");
+$urlswitch=$mvc->getUrl("edit"."/".$dungeonName."/".$level);
 $urllevelup=$urlleveldown="";
-$level=$map->getLevelNumber();
 if ($level>0) {
     $urllevelup=str_replace("@@@level@@@", $level-1, $url);
 }
-if ($level<31) {
+if ($level<99) {
     $urlleveldown=str_replace("@@@level@@@", $level+1, $url);
 }
 include("view.phtml");

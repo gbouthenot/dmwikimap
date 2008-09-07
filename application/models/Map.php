@@ -16,6 +16,8 @@ Class Map
      */
     protected static $_notes;
     
+
+    protected static $_comments;
     protected $_dungeonName;
     protected $_levelNumber;
     protected $_size;
@@ -46,7 +48,7 @@ Class Map
         
         $page=$this->_db->retrieve_one($sql, array($pagetitle), "old_text");
         if ($page===false) {
-            throw new Exception("page $pagetitle not found");
+            return "";
         }
         
         return utf8_decode($page);
@@ -62,15 +64,35 @@ Class Map
         $num=str_pad($levelNumber, 2, "0", STR_PAD_LEFT);
         
         $levelid="$dungeonName/Level$num";
-        $sql="SELECT CellTypes FROM cellmaps WHERE LevelID=?";
-        $page=$this->_db->retrieve_one($sql, array($levelid), "CellTypes");
+        $sql="SELECT cma_cells FROM cellmap WHERE cma_levelid=? ORDER BY cma_id DESC LIMIT 1";
+        $page=$this->_db->retrieve_one($sql, array($levelid), "cma_cells");
         if ($page===false) {
-            throw new Exception("page $levelid not found");
+            return implode(",", array_fill(0, 1024, "1"));
         }
         
         return utf8_decode($page);
     }
-
+    
+    protected function _setCells($dungeonName, $levelNumber, $cells)
+    {
+        $levelNumber=(int) $levelNumber;
+        if ($levelNumber>99) {
+            throw new Exception("levelNumber $levelNumber incorrect");
+        }
+        // Level should be 2-char long, (00 to 99)
+        $num=str_pad($levelNumber, 2, "0", STR_PAD_LEFT);
+        
+        $levelid="$dungeonName/Level$num";
+        $this->_db->insert("cellmap", array(
+            "cma_levelid"=>$levelid,
+            "cma_cells"=>$cells,
+            "cma_user_id"=>Auth::getId(),
+            "cma_datemodif"=>new Zend_Db_Expr("NOW()")
+        ));
+        $this->_cells=$cells;
+    }
+    
+    
     protected function _initCells($dungeonName, $levelNumber)
     {
         $cells=$this->_getCells($dungeonName, $levelNumber);
@@ -102,8 +124,15 @@ Class Map
             return;
         }
         $wikipage=$this->_getWikiPage("$dungeonName/Levels_notes");
-
-        /*
+        
+        $wikipage=str_replace("</p>","\n"  ,  $wikipage);
+        $wikipage=str_replace("</p>","",      $wikipage);
+        $wikipage=str_replace("\n\n","\n",    $wikipage);
+        $wikipage=str_replace("\n\n","\n",    $wikipage);
+        $wikipage=str_replace("\n\n","\n",    $wikipage);
+        $wikipage=str_replace("\n\n","\n",    $wikipage);
+        
+/*
         $wikipage="
         bla\n
         bla\n
@@ -136,7 +165,29 @@ Class Map
             $aNotes[$level][]=array(array($x, $y), $text);
         }
         self::$_notes=$aNotes;
-        //echo print_r($aNotes,true);
+        
+        // keep only the lines NOT starting with {
+        $lines=array();
+        preg_match_all('/^[^{].+/m', $wikipage, $lines);
+        
+        // build comments table
+        $aComments=array();
+        $currentlevel=null;
+        foreach ($lines[0] as $line) {
+            if ( strcasecmp(substr($line, 0, 10), "=== Level ") == 0 ) {
+                $currentlevel=(int) substr($line, 10, 2);
+            }
+            if ( strcasecmp(substr($line, 0, 11), "[[Category:") == 0 ) {continue;}
+            if ($currentlevel===null) {continue;}
+            $aComments[$currentlevel][]=$line;
+        }
+        // join comments with newline (one entry per level)
+        foreach ($aComments as $level=>$comments) {
+            $aComments[$level]=implode("\n", $comments);
+        }
+        self::$_comments=$aComments;
+        
+//        Gb_Log::logWarning(print_r($aComments,true));
         
     }
     
@@ -151,11 +202,12 @@ Class Map
     {
         $dungeonName=ucfirst(strtolower($dungeonName));
         $this->_dungeonName=$dungeonName;
-        $this->_levelNumber=$levelNumber;
+        $this->_levelNumber=(int) $levelNumber;
         $this->_initDb();
         $this->_initNotes($dungeonName);
         $this->_initCells($dungeonName, $levelNumber);
     }
+    
     
     public function getNotes()
     {
@@ -163,6 +215,24 @@ Class Map
             return self::$_notes[$this->_levelNumber];
         }
         return array();
+    }
+
+    public function getComments()
+    {
+        $retcomments="";
+        if (isset(self::$_comments[$this->_levelNumber])) {
+            $comments=self::$_comments[$this->_levelNumber];
+            if (strlen($comments)>25) {
+                $url="http://dmwiki.atomas.com/w/api.php?action=parse&format=php&text=";
+                $url.=urlencode($comments);
+                $comments=file_get_contents($url);
+                $comments=unserialize($comments);
+                if (isset($comments["parse"]["text"]["*"])) {
+                    $retcomments=$comments["parse"]["text"]["*"];
+                }
+            }
+        }
+        return $retcomments;
     }
     
     public function getDungeonName()
@@ -185,7 +255,7 @@ Class Map
         return $this->_size[0];
     }
 
-    public function getheight()
+    public function getHeight()
     {
         return $this->_size[1];
     }
@@ -193,6 +263,11 @@ Class Map
     public function getCells()
     {
         return $this->_cells;
+    }
+    
+    public function setCells($cells)
+    {
+        return $this->_setCells($this->_dungeonName, $this->_levelNumber, $cells);
     }
     
 }

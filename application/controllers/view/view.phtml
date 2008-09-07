@@ -10,87 +10,17 @@
 // $mapWidth  =
 // $mapHeight =
 // $aNotes
+// $urlswitch
+// $urllevelup
+// $urlleveldown
+// $mvcHref
+
+$mvc=Gb_Mvc::singleton();
+
+include("controllers/shared/header.phtml");
 
 ?>
 
-<html >
-<head>
-<base href="<?= $mvcHref ?>" />
-<style>
-p, blockquote, ul, h1, h2, h3, h4, h5, h6 {
-    margin: 0.2em;
-    padding: 0.3em;
-}
-ul {
-    padding-left: 1.7em;
-}
-.map {
-    border-collapse: collapse;
-    border: none;
-}
-.map td,.case {
-    margin: 0;
-    padding: 0;
-    width: <?php echo $tileSize[0]; ?>px;
-    height: <?php echo $tileSize[1]; ?>px;
-    text-align: center;
-    color: white;
-    font-size: smaller;
-}
-.map td img, #map td a {
-    border: none;
-}
-.hover-box {
-    border: 1px solid black;
-    background: yellow;
-    color: black;
-    padding: 0.5em;
-    position: absolute;
-    display: none;
-}
-img {
-    border:0
-}
-</style>
-<script type="text/javascript">//<![CDATA[
-// XHR for IE, (source: http://en.design-noir.de/webdev/JS/XMLHttpRequest-IE/ )
-/*@cc_on @if (@_win32 && @_jscript_version >= 5)
-  if (!window.XMLHttpRequest)
-    window.XMLHttpRequest = function() {
-      return new ActiveXObject('Microsoft.XMLHTTP')
-    }
-  @end @*/
-
-var currenthoverboxid = null;
-var tileIds = [<?php echo implode(",", $tileIds); ?>];
-var tileCount = <?php echo $tileCount; ?>;
-var tilePrefix = '<?php echo $tilePrefix; ?>';
-var tilePostfix = '<?php echo $tilePostfix; ?>';
-var mapId = '<?php echo $mapId; ?>';
-
-function getCellTileId( cellId ) {
-    return tileIds[cellId];
-}
-
-function hoverPopup( event, hoverboxid ) {
-    currenthoverboxid = hoverboxid;
-    var hb = document.getElementById(hoverboxid);
-    if( hb == null ) {
-  alert("Couldn't find element '" + hoverboxid + "'");
-  return;
-    }
-    hb.style.display = "block";
-    hb.style.top = event.clientY + 1;
-    hb.style.left = event.clientX + 1;
-}
-function hoverUnpop() {
-    if( currenthoverboxid != null ) {
-  var hb = document.getElementById(currenthoverboxid);
-  hb.style.display = "none";
-    }
-    currenthoverboxid = null;
-}
-//]]></script>
 <title><?php echo "$mapId View" ?></title>
 </head>
 <body>
@@ -108,110 +38,121 @@ foreach( $aNotes as $annot ) {
 
 ?>
 
-<table class="map">
-<caption>
-<? if ($urllevelup): ?>
-<a href='<?= $urllevelup ?>'><img src='tileimages/4.gif' title='up' /></a>
-<? else: ?>
-<img src='tileimages/2.gif' />
-<? endif; ?>
-Map of <?= $mapId ?>
-<? if ($urlleveldown): ?>
-<a href='<?= $urlleveldown ?>'><img src='tileimages/3.gif' title='down' /></a>
-<? else: ?>
-<img src='tileimages/2.gif' />
-<? endif; ?>
-</caption>
-<?php
-
-echo "<tr>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-for ($x=0; $x<$mapWidth; $x++)
-{
-  $dig="";
-  if (($x%10)==0)$dig=$x/10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-}
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "</tr>\n";
-echo "<tr>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-for ($x=0; $x<$mapWidth; $x++)
-{
-  $dig=$x%10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-}
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "</tr>\n";
-
-for( $y=0; $y<$mapHeight; ++$y )
-{
-  echo "<tr>\n";
-  $dig="";
-  if (($y%10)==0)$dig=$y/10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-  $dig=$y%10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-  for( $x=0; $x<$mapWidth; ++$x )
-  {
-    $cellId = $x+$y*$mapWidth;
-    $tileId = $tileIds[$cellId];
-    echo "\t<td id=\"cell-$cellId\"";
-    if( isset($cellPopups[$cellId]) )
-    {
-        $popupId = $cellPopups[$cellId];
-        echo " onmouseover=\"hoverPopup(event,'$popupId')\"";
-        echo " onmouseout=\"hoverUnpop(event,'$popupId')\"";
-        $tileId += 100;
-    };
-    if ($tileId==3) {
-        echo " onclick=\"location.replace('$urlleveldown')\" style='cursor:pointer'";
-    } elseif ($tileId==4) {
-        echo " onclick=\"location.replace('$urllevelup')\" style='cursor:pointer'";
-    }
-    echo " background=\"{$tilePrefix}{$tileId}{$tilePostfix}\" ";
-    echo "/>\n";
-  }
-  $dig="";
-  if (($y%10)==0)$dig=$y/10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-  $dig=$y%10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-  echo "</tr>\n";
-}
-
-echo "<tr>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-for ($x=0; $x<$mapWidth; $x++)
-{
-  $dig="";
-  if (($x%10)==0)$dig=$x/10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-}
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "</tr>\n";
-echo "<tr>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-for ($x=0; $x<$mapWidth; $x++)
-{
-  $dig=$x%10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-}
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "</tr>\n";
-
-
-
-
-?>
-</table>
+<div class='main'>
+    <div class='mainmap'>
+        <table class="map">
+        <caption>
+        <? if ($urllevelup): ?>
+        <a href='<?= $urllevelup ?>'><img src='tileimages/4.gif' title='up' /></a>
+        <? else: ?>
+        <img src='tileimages/2.gif' />
+        <? endif; ?>
+        Map of <?= $mapId ?>
+        <? if ($urlleveldown): ?>
+        <a href='<?= $urlleveldown ?>'><img src='tileimages/3.gif' title='down' /></a>
+        <? else: ?>
+        <img src='tileimages/2.gif' />
+        <? endif; ?>
+        </caption>
+        <?php
+        
+        echo "<tr>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        for ($x=0; $x<$mapWidth; $x++)
+        {
+          $dig="";
+          if (($x%10)==0)$dig=$x/10;
+          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+        }
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "</tr>\n";
+        echo "<tr>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        for ($x=0; $x<$mapWidth; $x++)
+        {
+          $dig=$x%10;
+          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+        }
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "</tr>\n";
+        
+        for( $y=0; $y<$mapHeight; ++$y )
+        {
+          echo "<tr>\n";
+          $dig="";
+          if (($y%10)==0)$dig=$y/10;
+          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+          $dig=$y%10;
+          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+          for( $x=0; $x<$mapWidth; ++$x )
+          {
+            $cellId = $x+$y*$mapWidth;
+            $tileId = $tileIds[$cellId];
+            echo "\t<td id=\"cell-$cellId\"";
+            if( isset($cellPopups[$cellId]) )
+            {
+                $popupId = $cellPopups[$cellId];
+                echo " onmouseover=\"hoverPopup(event,'$popupId')\"";
+                echo " onmouseout=\"hoverUnpop(event,'$popupId')\"";
+                $tileId += 100;
+            };
+            if ($tileId==3) {
+                echo " onclick=\"location.replace('$urlleveldown')\" style='cursor:pointer'";
+            } elseif ($tileId==4) {
+                echo " onclick=\"location.replace('$urllevelup')\" style='cursor:pointer'";
+            }
+            echo " background=\"{$tilePrefix}{$tileId}{$tilePostfix}\" ";
+            echo "/>\n";
+          }
+          $dig="";
+          if (($y%10)==0)$dig=$y/10;
+          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+          $dig=$y%10;
+          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+          echo "</tr>\n";
+        }
+        
+        echo "<tr>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        for ($x=0; $x<$mapWidth; $x++)
+        {
+          $dig="";
+          if (($x%10)==0)$dig=$x/10;
+          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+        }
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "</tr>\n";
+        echo "<tr>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        for ($x=0; $x<$mapWidth; $x++)
+        {
+          $dig=$x%10;
+          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+        }
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+        echo "</tr>\n";
+        
+        
+        
+        
+        ?>
+        </table>
+    </div>
+    
+    <div class="rightpane">
+        <div style='text-align:right;'><a href='<?= $urlswitch ?>'>switch to edit mode</a></div>
+    <?= $comments ?>
+    </div>
+    
+    <div class='clear'></div>
+</div>
 </body>
 </html>

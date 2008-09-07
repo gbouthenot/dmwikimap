@@ -19,54 +19,52 @@ $args=$mvc->getArgs();
 $action=$args->get();
 if ($action=="save") {
     $args->remove();
+    
     $auth=Auth::singleton();
     if ($auth->getLogin()===false) {
-        echo "access denied";
+        echo "access denied.";
     } else {
-        print_r($_POST);
+        $dungeonName=Gb_Request::getFormPost("dungeonname");
+        $level=Gb_Request::getFormPost("levelnumber");
+        $cells=Gb_Request::getFormPost("tileIds");
+    
+        $map=new Map($dungeonName, $level);
+        $map->setCells($cells);
+        echo "map saved.";
     }
-    exit(0);
+} else {
+    $dungeonName=$args->remove("dungeonname");
+    $level=$args->remove("levelnumber");
+    
+    if ($dungeonName===null) { $dungeonName=$args->remove(); }
+    if ($level===null) { $level=$args->remove(); }
+    
+    $map=new Map($dungeonName, $level);
+    $dungeonName=$map->getDungeonName();
+    $level=$map->getLevelNumber();
+    $mapSize=$map->getSize();
+    $tileIds=$map->getCells();
+    $mapWidth =$map->getWidth();
+    $mapHeight=$map->getHeight();
+    $aNotes=$map->getNotes();
+
+    $mapId = ucfirst($dungeonName)." / Level ".$level;
+    
+    $tileSize=array(16, 16);
+    $tileCount = 10;                    // number of 'different' tiles
+    $tilePrefix = "tileimages/";
+    $tilePostfix = ".gif";
+
+    $url=$mvc->getUrl("edit"."/".$dungeonName."/"."@@@level@@@");
+    $urlSave=$mvc->getUrl(array("edit","save"));
+    $urlswitch=$mvc->getUrl("view"."/".$dungeonName."/".$level);
+    $urllevelup=$urlleveldown="";
+    if ($level>0) {
+        $urllevelup=str_replace("@@@level@@@", $level-1, $url);
+    }
+    if ($level<99) {
+        $urlleveldown=str_replace("@@@level@@@", $level+1, $url);
+    }
+    include("edit.phtml");
 }
-
-$dungeonName=$args->remove("dungeonname");
-$level=$args->remove("levelnumber");
-
-if ($dungeonName===null) { $dungeonName=$args->remove(); }
-if ($level===null) { $level=$args->remove(); }
-
-$action=$args->remove();
-if ($action=="save") {
-    echo "<pre>";
-    print_r($_POST);
-    exit(1);
-}
-
-
-$map=new Map($dungeonName, $level);
-$mapSize=$map->getSize();
-
-$urlSave=$mvc->getUrl(array("edit","save"));
-
-
-$tileSize=array(16, 16);
-$tileCount = 10;                    // number of 'different' tiles
-$tilePrefix = "tileimages/";
-$tilePostfix = ".gif";
-$mapId = ucfirst($map->getDungeonName())." / Level ".$map->getLevelNumber();
-$tileIds=$map->getCells();
-$mapWidth =$map->getWidth();
-$mapHeight=$map->getHeight();
-$aNotes=$map->getNotes();
-$url=$mvcRootUrl.$mvcController."/".$dungeonName."/"."@@@level@@@";
-
-$urllevelup=$urlleveldown="";
-$level=$map->getLevelNumber();
-if ($level>0) {
-    $urllevelup=str_replace("@@@level@@@", $level-1, $url);
-}
-if ($level<31) {
-    $urlleveldown=str_replace("@@@level@@@", $level+1, $url);
-}
-include("edit.phtml");
-
 ?>

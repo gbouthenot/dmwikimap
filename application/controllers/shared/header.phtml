@@ -1,0 +1,148 @@
+<html>
+<head>
+<base href="<?= $mvcHref ?>" />
+
+<script src='js/prototype.js'     type='text/javascript'></script>
+<script src='js/scriptaculous.js' type='text/javascript'></script>
+<script src='js/gb.js?v=3'        type='text/javascript'></script>
+<!--  <script src='js/tablesort.js'     type='text/javascript'></script> -->
+<!--  <script src='js/accordion.js'     type='text/javascript'></script> -->
+
+<meta http-equiv='Content-Type'        content='text/html; charset=ISO-8859-1'>
+<meta http-equiv='Content-Script-Type' content='text/javascript'>
+<meta http-equiv='Content-Style-Type'  content='text/css'>
+<meta http-equiv='Content-Language'    content='fr'>
+
+<style>
+ select                   {background:#eee; border:1px solid #999; padding:0px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
+}input.text               {background:#eee; border:1px solid #999; padding:1px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
+}textarea                 {background:#eee; border:1px solid #999; padding:1px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
+}input.password           {background:#eee; border:1px solid #999; padding:1px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
+}input.submit             {border:1px outset #999; padding:1px 20px; font-size:80%; font-weight:bold; cursor:pointer;
+                           background:url(img/submitbg.gif) repeat-x left 20% #eee; color:#444;
+}input:hover.submit       {border:1px inset #999;
+                           background:url(img/submitbg.gif) repeat-x left 0% #fff;
+}input:active.submit      {color:#000; padding:2px 19px 0px 21px; border:1px inset #999;
+}.GBFORM                  {
+}.GBFORM .OK              {padding:2px; margin:0px;
+}.GBFORM .NOK             {border:2px solid #f00; padding:0px; margin:0px;
+}.GBFORM .NOK .ERROR      {color:#f00;
+}.GBFORM .PRE             {
+}.GBFORM .POST            {font-style:italic; font-size:90%;
+}.GBFORM_SPAN_OK          {display:inline; padding:2px; margin:0px;
+}.GBFORM_SPAN_NOK         {display:inline; border:2px solid #f00; padding:0px; margin:0px;
+}.GBFORM_SPAN_ERROR       {display:inline; color:#f00;
+}
+
+body {
+    margin:0;
+}
+p, blockquote, ul, h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 5px 0;
+}
+ul {
+    padding-left: 1.7em;
+}
+.main {
+    width:1100px;    
+}
+.mainmap {
+    float:left;
+}
+.rightpane {
+    float:left;
+    margin-left:10px;
+    width:510px;
+}
+.map {
+    border-collapse: collapse;
+    border: none;
+}
+.map td,.case {
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    color: white;
+    font-size: smaller;
+}
+.map td img, #map td a {
+    border: none;
+}
+
+img {
+    border:0;
+}
+.authtarget{
+    border:1px solid #000;
+    margin:5px;
+    padding:3px;
+    background:#eee;
+    float:left;
+}
+.hover-box {
+    border: 1px solid black;
+    background: yellow;
+    color: black;
+    padding: 0.5em;
+    position: absolute;
+    display: none;
+}
+.clear{
+    clear:both;
+}
+</style>
+
+<script type="text/javascript">//<![CDATA[
+var currenthoverboxid = null;
+var tileIds = [<?php echo implode(",", $tileIds); ?>];
+var tileCount = <?php echo $tileCount; ?>;
+var tilePrefix = '<?php echo $tilePrefix; ?>';
+var tilePostfix = '<?php echo $tilePostfix; ?>';
+var mapId = '<?php echo $mapId; ?>';
+var dungeonname = '<?php echo $dungeonName; ?>';
+var level = '<?php echo $level; ?>';
+var currentTool = 3;
+
+function setCellTileId( cellId, tileId ) {
+    tileIds[cellId] = tileId;
+    document.getElementById("cell-" + cellId).
+  setAttribute("background", tilePrefix + tileId + tilePostfix);
+}
+function getCellTileId( cellId ) {
+    return tileIds[cellId];
+}
+
+function cellClicked( cellId ) {
+//    var t = getCellTileId(cellId);
+//    t = (t + 1) % tileCount;
+    t = currentTool;
+    setCellTileId(cellId, t);
+}
+
+function toolClicked( toolNum )
+{
+  currentTool = toolNum;
+}
+
+function hoverPopup( event, hoverboxid ) {
+    currenthoverboxid = hoverboxid;
+    var hb = document.getElementById(hoverboxid);
+    if( hb == null ) {
+  alert("Couldn't find element '" + hoverboxid + "'");
+  return;
+    }
+    hb.style.display = "block";
+    hb.style.top = event.clientY + 1;
+    hb.style.left = event.clientX + 1;
+}
+function hoverUnpop() {
+    if( currenthoverboxid != null ) {
+  var hb = document.getElementById(currenthoverboxid);
+  hb.style.display = "none";
+    }
+    currenthoverboxid = null;
+}
+
+//]]></script>

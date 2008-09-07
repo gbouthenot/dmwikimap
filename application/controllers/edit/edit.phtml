@@ -12,134 +12,125 @@
 // $mapWidth  =
 // $mapHeight =
 /* @var $urlSave String */
+// $mvcHref
 
 $mvc=Gb_Mvc::singleton();
 
+include("controllers/shared/header.phtml");
+
 ?>
 
-<html>
-<head>
-<base href="<?= $mvcHref ?>" />
-
-<script src='js/prototype.js'     type='text/javascript'></script>
-<script src='js/scriptaculous.js' type='text/javascript'></script>
-<script src='js/gb.js?v=3'        type='text/javascript'></script>
-<!--  <script src='js/tablesort.js'     type='text/javascript'></script> -->
-<!--  <script src='js/accordion.js'     type='text/javascript'></script> -->
-
-<meta http-equiv='Content-Type'        content='text/html; charset=ISO-8859-1'>
-<meta http-equiv='Content-Script-Type' content='text/javascript'>
-<meta http-equiv='Content-Style-Type'  content='text/css'>
-<meta http-equiv='Content-Language'    content='fr'>
 
 
-<style>
- select                   {background:#eee; border:1px solid #999; padding:0px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
-}input.text               {background:#eee; border:1px solid #999; padding:1px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
-}textarea                 {background:#eee; border:1px solid #999; padding:1px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
-}input.password           {background:#eee; border:1px solid #999; padding:1px; background:url(img/inputbg.gif) repeat-x left top #d8d8d8;
-}input.submit             {border:1px outset #999; padding:1px 20px; font-size:80%; font-weight:bold; cursor:pointer;
-                           background:url(img/submitbg.gif) repeat-x left 20% #eee; color:#444;
-}input:hover.submit       {border:1px inset #999;
-                           background:url(img/submitbg.gif) repeat-x left 0% #fff;
-}input:active.submit      {color:#000; padding:2px 19px 0px 21px; border:1px inset #999;
-}.GBFORM                  {
-}.GBFORM .OK              {padding:2px; margin:0px;
-}.GBFORM .NOK             {border:2px solid #f00; padding:0px; margin:0px;
-}.GBFORM .NOK .ERROR      {color:#f00;
-}.GBFORM .PRE             {
-}.GBFORM .POST            {font-style:italic; font-size:90%;
-}.GBFORM_SPAN_OK          {display:inline; padding:2px; margin:0px;
-}.GBFORM_SPAN_NOK         {display:inline; border:2px solid #f00; padding:0px; margin:0px;
-}.GBFORM_SPAN_ERROR       {display:inline; color:#f00;
-}
-
-p, blockquote, ul, h1, h2, h3, h4, h5, h6 {
-    margin: 0.2em;
-    padding: 0.3em;
-}
-ul {
-    padding-left: 1.7em;
-}
-.map {
-    border-collapse: collapse;
-    border: none;
-}
-.map td {
-    margin: 0;
-    padding: 0;
-    width: <?php echo $tileSize[0]; ?>px;
-    height: <?php echo $tileSize[1]; ?>px;
-    text-align: center;
-    color: white;
-    font-size: smaller;
-}
-.map td img, #map td a {
-    border: none;
-}
-
-img {
-    border:0;
-}
-.authtarget{
-    border:1px solid #000;
-    margin:5px;
-    padding:3px;
-    background:#eee;
-    float:left;
-}
-.clear{
-    clear:both;
-}
-
-</style>
-<script type="text/javascript">//<![CDATA[
-// XHR for IE, (source: http://en.design-noir.de/webdev/JS/XMLHttpRequest-IE/ )
-/*@cc_on @if (@_win32 && @_jscript_version >= 5)
-  if (!window.XMLHttpRequest)
-    window.XMLHttpRequest = function() {
-      return new ActiveXObject('Microsoft.XMLHTTP')
-    }
-  @end @*/
-
-var tileIds = [<?php echo implode(",", $tileIds); ?>];
-var tileCount = <?php echo $tileCount; ?>;
-var tilePrefix = '<?php echo $tilePrefix; ?>';
-var tilePostfix = '<?php echo $tilePostfix; ?>';
-var mapId = '<?php echo $mapId; ?>';
-var dungeonname = '<?php echo $dungeonName; ?>';
-var level = '<?php echo $level; ?>';
-var currentTool = 3;
-
-function setCellTileId( cellId, tileId ) {
-    tileIds[cellId] = tileId;
-    document.getElementById("cell-" + cellId).
-  setAttribute("background", tilePrefix + tileId + tilePostfix);
-}
-function getCellTileId( cellId ) {
-    return tileIds[cellId];
-}
-
-function cellClicked( cellId ) {
-//    var t = getCellTileId(cellId);
-//    t = (t + 1) % tileCount;
-    t = currentTool;
-    setCellTileId(cellId, t);
-}
-
-function toolClicked( toolNum )
-{
-  currentTool = toolNum;
-}
-
-//]]></script>
 <title><?php echo "$mapId Edit" ?></title>
 </head>
 <body>
 
 
-<table class="map">
+<div class='mainmap'>
+    <table class="map">
+    
+    <caption>
+    <? if ($urllevelup): ?>
+    <a href='<?= $urllevelup ?>'><img src='tileimages/4.gif' title='up' /></a>
+    <? else: ?>
+    <img src='tileimages/2.gif' />
+    <? endif; ?>
+    Map of <?= $mapId ?>
+    <? if ($urlleveldown): ?>
+    <a href='<?= $urlleveldown ?>'><img src='tileimages/3.gif' title='down' /></a>
+    <? else: ?>
+    <img src='tileimages/2.gif' />
+    <? endif; ?>
+    </caption>
+    
+    
+    <?php
+    
+    echo "<tr>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    for ($x=0; $x<$mapWidth; $x++)
+    {
+      $dig="";
+      if (($x%10)==0)$dig=$x/10;
+      echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+    }
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "</tr>\n";
+    echo "<tr>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    for ($x=0; $x<$mapWidth; $x++)
+    {
+      $dig=$x%10;
+      echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+    }
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "</tr>\n";
+    
+    for( $y=0; $y<$mapHeight; ++$y )
+    {
+      echo "<tr>\n";
+      $dig="";
+      if (($y%10)==0)$dig=$y/10;
+      echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+      $dig=$y%10;
+      echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+      for( $x=0; $x<$mapWidth; ++$x )
+      {
+        $cellId = $x+$y*$mapWidth;
+        $tileId = $tileIds[$cellId];
+        echo "\t<td id=\"cell-$cellId\"";
+        echo " background=\"{$tilePrefix}{$tileId}{$tilePostfix}\"";
+        echo " onclick=\"cellClicked($cellId)\"";
+        echo "/>\n";
+      }
+      $dig="";
+      if (($y%10)==0)$dig=$y/10;
+      echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+      $dig=$y%10;
+      echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+      echo "</tr>\n";
+    }
+    
+    echo "<tr>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    for ($x=0; $x<$mapWidth; $x++)
+    {
+      $dig="";
+      if (($x%10)==0)$dig=$x/10;
+      echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+    }
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "</tr>\n";
+    echo "<tr>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    for ($x=0; $x<$mapWidth; $x++)
+    {
+      $dig=$x%10;
+      echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
+    }
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "\t<td background=\"tileimages/0.gif\"></td>\n";
+    echo "</tr>\n";
+    
+    ?>
+    </table>
+</div>
 
+
+<div class="rightpane">
+
+<div style='text-align:right;'><a href='<?= $urlswitch ?>'>switch to view mode</a></div>
+
+
+<table class="map">
 <tr>
   <td background="tileimages/1.gif" onclick="toolClicked(1)"/>
   <td background="tileimages/2.gif" onclick="toolClicked(2)"/>
@@ -156,95 +147,18 @@ function toolClicked( toolNum )
 </tr>
 </table>
 
-<table class="map">
-<?php
-
-echo "<tr>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-for ($x=0; $x<$mapWidth; $x++)
-{
-  $dig="";
-  if (($x%10)==0)$dig=$x/10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-}
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "</tr>\n";
-echo "<tr>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-for ($x=0; $x<$mapWidth; $x++)
-{
-  $dig=$x%10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-}
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "</tr>\n";
-
-for( $y=0; $y<$mapHeight; ++$y )
-{
-  echo "<tr>\n";
-  $dig="";
-  if (($y%10)==0)$dig=$y/10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-  $dig=$y%10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-  for( $x=0; $x<$mapWidth; ++$x )
-  {
-    $cellId = $x+$y*$mapWidth;
-    $tileId = $tileIds[$cellId];
-    echo "\t<td id=\"cell-$cellId\"";
-    echo " background=\"{$tilePrefix}{$tileId}{$tilePostfix}\"";
-    echo " onclick=\"cellClicked($cellId)\"";
-    echo "/>\n";
-  }
-  $dig="";
-  if (($y%10)==0)$dig=$y/10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-  $dig=$y%10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-  echo "</tr>\n";
-}
-
-echo "<tr>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-for ($x=0; $x<$mapWidth; $x++)
-{
-  $dig="";
-  if (($x%10)==0)$dig=$x/10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-}
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "</tr>\n";
-echo "<tr>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-for ($x=0; $x<$mapWidth; $x++)
-{
-  $dig=$x%10;
-  echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-}
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-echo "</tr>\n";
 
 
-
-
-?>
-</table>
 
 <div id='authtargetid' class='authtarget'>
-    <? $mvc->callController("auth");  ?>
+    <?= $mvc->callController("auth");  ?>
 </div>
 
 <?= ajaxSubmit($urlSave, "'savetargetid'", "Save tiles", "{dungeonname:dungeonname, levelnumber:level, tileIds:tileIds.join(',')}") ?>
 
 <div id='savetargetid' class='savetarget'>
+</div>
+
 </div>
 
 <div class='clear'></div>
