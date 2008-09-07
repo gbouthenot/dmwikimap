@@ -5,14 +5,20 @@
 // $tileCount = nn; // number of 'different' tiles
 // $tilePrefix = "tileimages/";
 // $tilePostfix = ".gif";
+// $mapId = "name of the map";
 // $dungeonname
 // $level
-// $mapId = "name of the map";
+// $mapName = "name of the map";
 // $tileIds = array(tileIds);
 // $mapWidth  =
 // $mapHeight =
 /* @var $urlSave String */
+/* @var $urlDelete String */
 // $mvcHref
+// $fShowDelete
+// $userName
+// $userDatemodif
+// $userComment
 
 $mvc=Gb_Mvc::singleton();
 
@@ -22,7 +28,7 @@ include("controllers/shared/header.phtml");
 
 
 
-<title><?php echo "$mapId Edit" ?></title>
+<title><?php echo "$mapName Edit" ?></title>
 </head>
 <body>
 
@@ -36,7 +42,7 @@ include("controllers/shared/header.phtml");
     <? else: ?>
     <img src='tileimages/2.gif' />
     <? endif; ?>
-    Map of <?= $mapId ?>
+    Map of <?= $mapName ?>
     <? if ($urlleveldown): ?>
     <a href='<?= $urlleveldown ?>'><img src='tileimages/3.gif' title='down' /></a>
     <? else: ?>
@@ -147,14 +153,33 @@ include("controllers/shared/header.phtml");
 </tr>
 </table>
 
-
+<div class='inputcomment'>
+    <b>This version:</b><br />
+    <?= htmlentities($userName) ?>: <?= htmlentities($userComment) ?> (<?= $userDatemodif ?>)<br />
+    <br />
+    <b>New version comments:</b>
+    <br /><input type='text' id='comment' class='inputcomment2' />
+</div>
 
 
 <div id='authtargetid' class='authtarget'>
     <?= $mvc->callController("auth");  ?>
 </div>
 
-<?= ajaxSubmit($urlSave, "'savetargetid'", "Save tiles", "{dungeonname:dungeonname, levelnumber:level, tileIds:tileIds.join(',')}") ?>
+<?= ajaxSubmit(
+    $urlSave,
+    "'savetargetid'",
+    "Save",
+    "{dungeonname:dungeonname, levelnumber:level, comment:\$F('comment'), tileIds:tileIds.join(',')}",
+    array(
+        "condition"  => "\$F(\"comment\").length>5",
+        "else"=>"alert(\"Please fill the comment.\")")
+    ) ?>
+
+<? if ($fShowDelete): ?>
+    <br />
+    <?= ajaxSubmit($urlDelete, "'savetargetid'", "Delete this version", "{mapid:mapid}", array("condition"  => "confirm(\"You're gonna delete the version shown juste above.\")")) ?>
+<? endif; ?>
 
 <div id='savetargetid' class='savetarget'>
 </div>

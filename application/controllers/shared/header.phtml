@@ -34,6 +34,13 @@
 }.GBFORM_SPAN_ERROR       {display:inline; color:#f00;
 }
 
+.inputcomment {
+    margin:10px 0;
+}
+.inputcomment2 {
+    width: 400px;
+}
+
 body {
     margin:0;
 }
@@ -104,6 +111,7 @@ var mapId = '<?php echo $mapId; ?>';
 var dungeonname = '<?php echo $dungeonName; ?>';
 var level = '<?php echo $level; ?>';
 var currentTool = 3;
+var mapid = <?= $mapId ?>;
 
 function setCellTileId( cellId, tileId ) {
     tileIds[cellId] = tileId;

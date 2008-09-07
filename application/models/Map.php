@@ -16,12 +16,18 @@ Class Map
      */
     protected static $_notes;
     
-
     protected static $_comments;
+
     protected $_dungeonName;
     protected $_levelNumber;
     protected $_size;
     protected $_cells;
+    protected $_versions;
+    protected $_mapid;
+    protected $_mapuserid;
+    protected $_mapuserdatemodif;
+    protected $_mapusername;
+    protected $_mapusercomment;
     
     protected function _initDb()
     {
@@ -62,18 +68,47 @@ Class Map
         }
         // Level should be 2-char long, (00 to 99)
         $num=str_pad($levelNumber, 2, "0", STR_PAD_LEFT);
-        
         $levelid="$dungeonName/Level$num";
-        $sql="SELECT cma_cells FROM cellmap WHERE cma_levelid=? ORDER BY cma_id DESC LIMIT 1";
-        $page=$this->_db->retrieve_one($sql, array($levelid), "cma_cells");
-        if ($page===false) {
-            return implode(",", array_fill(0, 1024, "1"));
+        
+        $aVersions=array();
+        
+        $sql="SELECT cma_id, cma_user_id, user_name, cma_datemodif, cma_comment, cma_cells FROM cellmap JOIN user ON user_id=cma_user_id WHERE cma_levelid=? ORDER BY cma_id DESC";
+        $page=$this->_db->retrieve_all($sql, array($levelid));
+        if (count($page)==0) {
+            $cells=implode(",", array_fill(0, 1024, "1"));
+        } else {
+            $cells=null;
+            foreach ($page as $l) {
+                $aVersions[]=array(
+                    "id"=>$l["cma_id"],
+                    "user_name"=>utf8_decode($l["user_name"]),
+                    "datemodif"=>$l["cma_datemodif"],
+                    "comment"=>  utf8_decode($l["cma_comment"])
+                );
+                if ($this->_mapid==$l["cma_id"]) {
+                    $cells=$l["cma_cells"];
+                    $this->_mapuserid=$l["cma_user_id"];
+                    $this->_mapusername=utf8_decode($l["user_name"]);
+                    $this->_mapuserdatemodif=$l["cma_datemodif"];
+                    $this->_mapusercomment=utf8_decode($l["cma_comment"]);
+                }
+            }
+            // mapid not specified: return most recent
+            if (empty($this->_mapid)) {
+                $this->_mapid=$page[0]["cma_id"];
+                $this->_mapuserid=$page[0]["cma_user_id"];
+                $this->_mapusername=utf8_decode($page[0]["user_name"]);
+                $this->_mapuserdatemodif=$page[0]["cma_datemodif"];
+                $this->_mapusercomment=utf8_decode($page[0]["cma_comment"]);
+                $cells=$page[0]["cma_cells"];
+            }
         }
         
-        return utf8_decode($page);
+        $this->_versions=$aVersions;
+        return utf8_decode($cells);
     }
     
-    protected function _setCells($dungeonName, $levelNumber, $cells)
+    protected function _setCells($dungeonName, $levelNumber, $cells, $comment)
     {
         $levelNumber=(int) $levelNumber;
         if ($levelNumber>99) {
@@ -87,7 +122,8 @@ Class Map
             "cma_levelid"=>$levelid,
             "cma_cells"=>$cells,
             "cma_user_id"=>Auth::getId(),
-            "cma_datemodif"=>new Zend_Db_Expr("NOW()")
+            "cma_datemodif"=>new Zend_Db_Expr("NOW()"),
+            "cma_comment"=>$comment
         ));
         $this->_cells=$cells;
     }
@@ -98,6 +134,7 @@ Class Map
         $cells=$this->_getCells($dungeonName, $levelNumber);
         $aCells1=explode(",", $cells);
         
+
         if (count($aCells1)==32*32) {
             $w=$h=32;
         } else {
@@ -123,72 +160,92 @@ Class Map
         if (self::$_notes !== null) {
             return;
         }
-        $wikipage=$this->_getWikiPage("$dungeonName/Levels_notes");
+//        $wikipage=$this->_getWikiPage("$dungeonName/Levels_notes");
         
-        $wikipage=str_replace("</p>","\n"  ,  $wikipage);
-        $wikipage=str_replace("</p>","",      $wikipage);
-        $wikipage=str_replace("\n\n","\n",    $wikipage);
-        $wikipage=str_replace("\n\n","\n",    $wikipage);
-        $wikipage=str_replace("\n\n","\n",    $wikipage);
-        $wikipage=str_replace("\n\n","\n",    $wikipage);
+        $cacheWiki=new Gb_Cache("CacheWikiPage$dungeonName", 30);
         
-/*
-        $wikipage="
-        bla\n
-        bla\n
-        {4,5,6}blabla\n
-        {4,5,6}blabla<br>\n
-        {1,2,3}     TTTTTTTTTTTT <br><br /><br><br /><br><br /><br>\n
-        {7,8,99}    TTTTTTTTTTTT <br><br /><br><br /><br><br />\n
-        ";
-        */
-        
-        $lines=array();
-        preg_match_all('/^\{(\d{1,2},\d{1,2},\d{1,2})\}\s*(.+?)\s*(?:<br>|<br \/>)*$/m', $wikipage, $lines);
-        // Commentaire regexp:
-        //        /^                              : début de ligne
-        //        \{(\d{1,2},\d{1,2},\d{1,2})\}   : doit commencer par {n,n,n} n=nombre entre 0 et 99 à capturer
-        //        \s*                             : éventuellement des espaces
-        //        (.+?)                           : le texte à capturer +?=ungreedy
-        //        \s*                             : éventuellement des espaces
-        //        (?:<br>|<br \/>)*               : éventuellement des <br> ou <br /> (ne pas capturer)
-        //        $/                              : fin de ligne
-        //        m                               : traite ligne par ligne
-        
-        //echo print_r($lines,true);
-        
-        $aNotes=array();
-        foreach ($lines[1] as $index=>$coords) {
-            list($level, $x, $y)=explode(",", $coords);
-            $text=$lines[2][$index];
-            //$aNotes[$level][$x][$y]=$text;
-            $aNotes[$level][]=array(array($x, $y), $text);
-        }
-        self::$_notes=$aNotes;
-        
-        // keep only the lines NOT starting with {
-        $lines=array();
-        preg_match_all('/^[^{].+/m', $wikipage, $lines);
-        
-        // build comments table
-        $aComments=array();
-        $currentlevel=null;
-        foreach ($lines[0] as $line) {
-            if ( strcasecmp(substr($line, 0, 10), "=== Level ") == 0 ) {
-                $currentlevel=(int) substr($line, 10, 2);
+        if (!isset($cacheWiki->wikipage)) {
+            $wikipage="";
+            $url="http://dmwiki.atomas.com/w/api.php?action=parse&format=php&page=".$dungeonName."/Levels_notes";
+            Gb_Response::$footer.="file_get_contents()\n";
+            $comments=file_get_contents($url);
+            $comments=unserialize($comments);
+            if (isset($comments["parse"]["text"]["*"])) {
+                $wikipage=$comments["parse"]["text"]["*"];
             }
-            if ( strcasecmp(substr($line, 0, 11), "[[Category:") == 0 ) {continue;}
-            if ($currentlevel===null) {continue;}
-            $aComments[$currentlevel][]=$line;
+            $cacheWiki->wikipage=$wikipage;
         }
-        // join comments with newline (one entry per level)
-        foreach ($aComments as $level=>$comments) {
-            $aComments[$level]=implode("\n", $comments);
+        $wikipage=$cacheWiki->wikipage;
+        
+        $cacheNotes=new Gb_Cache("CacheWikiNotes".md5($wikipage), 9999);
+        
+        if (!isset($cacheNotes->notes)) {
+            $wikipage=str_replace("</p>","\n"  ,  $wikipage);
+            $wikipage=str_replace("<p>", "",      $wikipage);
+            $wikipage=str_replace("\n\n","\n",    $wikipage);
+            $wikipage=str_replace("\n\n","\n",    $wikipage);
+            $wikipage=str_replace("\n\n","\n",    $wikipage);
+            $wikipage=str_replace("\n\n","\n",    $wikipage);
+            
+            /*
+            $wikipage="
+            bla\n
+            bla\n
+            {4,5,6}blabla\n
+            {4,5,6}blabla<br>\n
+            {1,2,3}     TTTTTTTTTTTT <br><br /><br><br /><br><br /><br>\n
+            {7,8,99}    TTTTTTTTTTTT <br><br /><br><br /><br><br />\n
+            ";
+            */
+            
+            $lines=array();
+            preg_match_all('/^\{(\d{1,2},\d{1,2},\d{1,2})\}\s*(.+?)\s*(?:<br>|<br \/>)*$/m', $wikipage, $lines);
+            // Commentaire regexp:
+            //        /^                              : début de ligne
+            //        \{(\d{1,2},\d{1,2},\d{1,2})\}   : doit commencer par {n,n,n} n=nombre entre 0 et 99 à capturer
+            //        \s*                             : éventuellement des espaces
+            //        (.+?)                           : le texte à capturer +?=ungreedy
+            //        \s*                             : éventuellement des espaces
+            //        (?:<br>|<br \/>)*               : éventuellement des <br> ou <br /> (ne pas capturer)
+            //        $/                              : fin de ligne
+            //        m                               : traite ligne par ligne
+            
+            //echo print_r($lines,true);
+            
+            $aNotes=array();
+            foreach ($lines[1] as $index=>$coords) {
+                list($level, $x, $y)=explode(",", $coords);
+                $text=$lines[2][$index];
+                //$aNotes[$level][$x][$y]=$text;
+                $aNotes[$level][]=array(array($x, $y), $text);
+            }
+            $cacheNotes->notes=$aNotes;
+            
+            
+            
+            // keep only the lines NOT starting with {
+            $lines=array();
+            preg_match_all('/^[^{].+/m', $wikipage, $lines);
+            
+            // build comments table
+            $aComments=array();
+            $currentlevel=null;
+            foreach ($lines[0] as $line) {
+                if ( strcasecmp(substr($line, 0, 15), '<a name="Level_') == 0 ) {
+                    $currentlevel=(int) substr($line, 15, 2);
+                }
+                //if ( strcasecmp(substr($line, 0, 11), "[[Category:") == 0 ) {continue;}
+                if ($currentlevel===null) {continue;}
+                $aComments[$currentlevel][]=$line;
+            }
+            // join comments with newline (one entry per level)
+            foreach ($aComments as $level=>$comments) {
+                $aComments[$level]=implode("\n", $comments);
+            }
+            $cacheNotes->comments=$aComments;
         }
-        self::$_comments=$aComments;
-        
-//        Gb_Log::logWarning(print_r($aComments,true));
-        
+        self::$_comments=$cacheNotes->comments;
+        self::$_notes=$cacheNotes->notes;
     }
     
     
@@ -198,12 +255,27 @@ Class Map
     
     
     
-    public function __construct($dungeonName, $levelNumber)
+    public function __construct($dungeonName, $levelNumber=null)
     {
+        $this->_initDb();
+
+        $mapid=null;
+        if ($levelNumber===null) {
+            $mapid=$dungeonName;
+            $sql="SELECT cma_levelid, cma_cells FROM cellmap WHERE cma_id=?";
+            $page=$this->_db->retrieve_one($sql, array($mapid));
+            if ($page===false) {
+                throw new Exception("mapid $mapid does not exist.");
+            }
+            $namelevel=Gb_Util::explode("/", $page["cma_levelid"]);
+            $dungeonName=$namelevel[0];
+            $levelNumber=substr($namelevel[1], 5);
+            $this->_mapid=$mapid;
+        }
+        
         $dungeonName=ucfirst(strtolower($dungeonName));
         $this->_dungeonName=$dungeonName;
         $this->_levelNumber=(int) $levelNumber;
-        $this->_initDb();
         $this->_initNotes($dungeonName);
         $this->_initCells($dungeonName, $levelNumber);
     }
@@ -221,18 +293,14 @@ Class Map
     {
         $retcomments="";
         if (isset(self::$_comments[$this->_levelNumber])) {
-            $comments=self::$_comments[$this->_levelNumber];
-            if (strlen($comments)>25) {
-                $url="http://dmwiki.atomas.com/w/api.php?action=parse&format=php&text=";
-                $url.=urlencode($comments);
-                $comments=file_get_contents($url);
-                $comments=unserialize($comments);
-                if (isset($comments["parse"]["text"]["*"])) {
-                    $retcomments=$comments["parse"]["text"]["*"];
-                }
-            }
+            $retcomments=self::$_comments[$this->_levelNumber];
         }
         return $retcomments;
+    }
+    
+    public function getVersions()
+    {
+        return $this->_versions;
     }
     
     public function getDungeonName()
@@ -250,6 +318,35 @@ Class Map
         return $this->_size;
     }
 
+    public function getMapId()
+    {
+        if ($this->_mapid) {
+            return $this->_mapid;
+        } else {
+            return 0;
+        }
+    }
+
+    public function getMapUserId()
+    {
+        return $this->_mapuserid;
+    }
+
+    public function getMapUserName()
+    {
+        return $this->_mapusername;
+    }
+
+    public function getMapUserDatemodif()
+    {
+        return $this->_mapuserdatemodif;
+    }
+
+    public function getMapUserComment()
+    {
+        return $this->_mapusercomment;
+    }
+    
     public function getWidth()
     {
         return $this->_size[0];
@@ -265,9 +362,14 @@ Class Map
         return $this->_cells;
     }
     
-    public function setCells($cells)
+    public function setCells($cells, $comment)
     {
-        return $this->_setCells($this->_dungeonName, $this->_levelNumber, $cells);
+        return $this->_setCells($this->_dungeonName, $this->_levelNumber, $cells, $comment);
+    }
+
+    public function delete()
+    {
+        $this->_db->delete("cellmap", array($this->_db->quoteInto("cma_id=?", $this->_mapid)) );
     }
     
 }

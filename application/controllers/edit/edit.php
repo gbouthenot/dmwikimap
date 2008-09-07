@@ -14,32 +14,63 @@ $mvc=Gb_Mvc::singleton();
 
 
 $mvc=Gb_Mvc::singleton();
+$auth=Auth::singleton();
 $args=$mvc->getArgs();
 
 $action=$args->get();
 if ($action=="save") {
     $args->remove();
     
-    $auth=Auth::singleton();
     if ($auth->getLogin()===false) {
-        echo "access denied.";
+        echo "access denied: not logged in.";
     } else {
         $dungeonName=Gb_Request::getFormPost("dungeonname");
         $level=Gb_Request::getFormPost("levelnumber");
         $cells=Gb_Request::getFormPost("tileIds");
-    
+        $comment=Gb_Request::getFormPost("comment");
+        
         $map=new Map($dungeonName, $level);
-        $map->setCells($cells);
-        echo "map saved.";
+        $map->setCells($cells, $comment);
+        $body="map saved.";
+        $url=$mvc->getUrl(array("edit", $map->getDungeonName(), $map->getLevelNumber()));
+        include("controllers/shared/javascriptDelayedRefresh.phtml");
+        
+    }
+} elseif ($action=="delete") {
+    $args->remove();
+    
+    if ($auth->getLogin()===false) {
+        echo "access denied: not logged in.";
+    } else {
+        $mapid=Gb_Request::getFormPost("mapid");
+        
+        $map=new Map($mapid);
+        if ($auth->getId() == $map->getMapUserId()) {
+            $map->delete();
+            $body="map deleted.";
+            $url=$mvc->getUrl(array("edit", $map->getDungeonName(), $map->getLevelNumber()));
+            include("controllers/shared/javascriptDelayedRefresh.phtml");
+        } else {
+            echo "cannot delete others map.";
+        }
     }
 } else {
-    $dungeonName=$args->remove("dungeonname");
-    $level=$args->remove("levelnumber");
+    $mapid=$args->remove("mapid");
+    if (isset($mapid)) {
+        $map=new Map($mapid);
+        $urlswitch=$mvc->getUrl("view"."/"."mapid"."/".$map->getMapId());
+        
+    } else {
+        $dungeonName=$args->remove("dungeonname");
+        $level=$args->remove("levelnumber");
+        
+        if ($dungeonName===null) { $dungeonName=$args->remove(); }
+        if ($level===null) { $level=$args->remove(); }
+        
+        $map=new Map($dungeonName, $level);
+        $urlswitch=$mvc->getUrl("view"."/".$map->getDungeonName()."/".$map->getLevelNumber());
+    }
     
-    if ($dungeonName===null) { $dungeonName=$args->remove(); }
-    if ($level===null) { $level=$args->remove(); }
-    
-    $map=new Map($dungeonName, $level);
     $dungeonName=$map->getDungeonName();
     $level=$map->getLevelNumber();
     $mapSize=$map->getSize();
@@ -47,8 +78,20 @@ if ($action=="save") {
     $mapWidth =$map->getWidth();
     $mapHeight=$map->getHeight();
     $aNotes=$map->getNotes();
-
-    $mapId = ucfirst($dungeonName)." / Level ".$level;
+    $userComment=$map->getMapUserComment();
+    $userDatemodif=$map->getMapUserDatemodif();
+    $userName=$map->getMapUserName();
+    
+    $mapName = ucfirst($dungeonName)." / Level ".$level;
+    $mapId=$map->getMapId();
+    
+    $fShowDelete=false;
+    if ($mapId && $map->getMapUserId()==$auth->getId()) {
+        $fShowDelete=true;
+    }
+    
+    // always shows delete
+    $fShowDelete=true;
     
     $tileSize=array(16, 16);
     $tileCount = 10;                    // number of 'different' tiles
@@ -57,7 +100,7 @@ if ($action=="save") {
 
     $url=$mvc->getUrl("edit"."/".$dungeonName."/"."@@@level@@@");
     $urlSave=$mvc->getUrl(array("edit","save"));
-    $urlswitch=$mvc->getUrl("view"."/".$dungeonName."/".$level);
+    $urlDelete=$mvc->getUrl(array("edit","delete"));
     $urllevelup=$urlleveldown="";
     if ($level>0) {
         $urllevelup=str_replace("@@@level@@@", $level-1, $url);
