@@ -11,6 +11,7 @@
 // $mapHeight =
 // $aNotes
 // $urlversion
+// $urleditnotes
 // $urlswitch
 // $urllevelup
 // $urlleveldown
@@ -153,7 +154,8 @@ foreach( $aNotes as $annot ) {
     
     <div class="rightpane">
         <div style='text-align:right;'><a href='<?= $urlswitch ?>'>switch to edit mode</a></div>
-    <?= $comments ?>
+        <?= $comments ?>
+        <div style='text-align:right;'><a href='<?= $urleditnotes ?>' target='_blank'>edit level notes</a></div>
     </div>
     
     <div class='clear'></div>

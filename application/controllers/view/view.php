@@ -25,7 +25,7 @@ if (isset($mapid)) {
     
     $map=new Map($dungeonName, $level);
     $urlswitch=$mvc->getUrl("edit"."/".$map->getDungeonName()."/".$map->getLevelNumber());
-    }
+}
 
 $comments=$map->getComments();
 
@@ -42,6 +42,7 @@ $userName=$map->getMapUserName();
 $aVersions=$map->getVersions();
 $mapName = ucfirst($dungeonName)." / Level ".$level;
 $mapId=$map->getMapId();
+$urleditnotes="http://dmwiki.atomas.com/w/index.php?title=$dungeonName/Levels_notes&action=edit&section=".($level+2);
 
 
 $tileSize=array(16, 16);
