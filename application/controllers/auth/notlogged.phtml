@@ -18,4 +18,5 @@ $form
 
 <?= $form->getHtml() ?>
 
-<?= ajaxSubmit($urlLogin, "'authtargetid'", "submit", "{GBFORM_login:\$F('GBFORM_login'), GBFORM_password: \$F('GBFORM_password')}") ?>
+<?= ajaxSubmit($urlLogin, "'authtargetid'", "submit", "{GBFORM_login:\$F('GBFORM_login'), GBFORM_password: \$F('GBFORM_password'), GBFORMPOST: \$F('GBFORMPOST')}") ?>
+
