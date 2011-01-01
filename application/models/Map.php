@@ -267,7 +267,7 @@ Class Map
             if ($page===false) {
                 throw new Exception("mapid $mapid does not exist.");
             }
-            $namelevel=Gb_Util::explode("/", $page["cma_levelid"]);
+            $namelevel=Gb_String::explode("/", $page["cma_levelid"]);
             $dungeonName=$namelevel[0];
             $levelNumber=substr($namelevel[1], 5);
             $this->_mapid=$mapid;
