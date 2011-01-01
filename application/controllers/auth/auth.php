@@ -20,11 +20,14 @@ $form
 ;
 
 $form->load();
-
+$message="";
 
 if ($action==="login" && $form->validate()===true)
 {
-    $auth->login($_POST["GBFORM_login"], $_POST["GBFORM_password"]);
+    $login=$auth->login($_POST["GBFORM_login"], $_POST["GBFORM_password"]);
+    if ($login === false) {
+        $message="Wrong creditentials";
+    }
 }
 
 $login=$auth->getLogin();

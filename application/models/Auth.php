@@ -93,6 +93,7 @@ Class Auth
     /**
      * @param string $username
      * @param string $password
+     * @return false|string
      */
     public function login($username, $password)
     {

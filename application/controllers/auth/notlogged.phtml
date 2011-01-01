@@ -4,6 +4,7 @@
 // parameters:
 /* @var $form     Gb_Form */
 /* @var $urlLogin string */
+/* @var $message  string */
 
 $form
     ->setElementParam("login",    "preInput",  "Login :")
@@ -18,5 +19,8 @@ $form
 
 <?= $form->getHtml() ?>
 
+<? if (strlen($message)): ?>
+    <div style="border:1px solid #f00;"><?= $message ?></div>
+<? endif; ?>
 <?= ajaxSubmit($urlLogin, "'authtargetid'", "submit", "{GBFORM_login:\$F('GBFORM_login'), GBFORM_password: \$F('GBFORM_password'), GBFORMPOST: \$F('GBFORMPOST')}") ?>
 

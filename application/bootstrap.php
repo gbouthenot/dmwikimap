@@ -1,14 +1,9 @@
 <?
 error_reporting(E_ALL);
 
-require_once("Zend/Loader.php");
-Zend_Loader::registerAutoload();
-
-require_once("Gb/Mvc.php");
-require_once("Gb/Request.php");
-require_once("Gb/Response.php");
-require_once("Gb/Session.php");
-require_once("Gb/Util.php");
+require_once("Zend/Loader/Autoloader.php");
+$autoloader = Zend_Loader_Autoloader::getInstance();
+$autoloader->registerNamespace('Gb_');
 
 Gb_Session::session_start();
 
