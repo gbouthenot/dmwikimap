@@ -97,10 +97,26 @@ Class Auth
      */
     public function login($username, $password)
     {
+        Gb_Log::logInfo("log attempt for $username", null, false);
         $db=$this->_getDb();
         
-        $sql="select user_id, user_name from user WHERE LOWER(user_name)=LOWER(?) AND user_password=MD5(CONCAT(user_id,'-',MD5(?)))";
-        $login=$db->retrieve_one($sql, array($username, $password));
+        // voir wikimedia includes/User.php
+        $sql="
+SELECT user_id, user_name
+FROM user
+WHERE
+    LOWER(user_name)=LOWER(?)
+    AND
+    user_password=
+    IF(substr(user_password,1,3)=':B:',
+        CONCAT(':B:', SUBSTR(user_password, 4, 8), ':', MD5(CONCAT(SUBSTR(user_password, 4, 8), '-', MD5(?)))),
+        IF(substr(user_password,1,3)=':A:',
+            CONCAT(':A:', MD5(?)),
+            IF(LENGTH(user_password)=32,
+                MD5(CONCAT(user_id, '-', MD5(?))),
+                MD5(?)
+)))";
+        $login=$db->retrieve_one($sql, array($username, $password, $password, $password, $password));
         
         if ($login===false) {
             return false;
@@ -121,4 +137,3 @@ Class Auth
 
 
 
-?>

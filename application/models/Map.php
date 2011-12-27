@@ -118,13 +118,18 @@ Class Map
         $num=str_pad($levelNumber, 2, "0", STR_PAD_LEFT);
         
         $levelid="$dungeonName/Level$num";
-        $this->_db->insert("cellmap", array(
+        
+        $aInsert = array(
             "cma_levelid"=>$levelid,
             "cma_cells"=>$cells,
             "cma_user_id"=>Auth::getId(),
             "cma_datemodif"=>new Zend_Db_Expr("NOW()"),
             "cma_comment"=>$comment
-        ));
+        );
+        
+        Gb_Log::logInfo("setCells $levelid, comment:$comment", null, false);
+        Gb_Log::logDebug("insert into cellmap", $aInsert, false);
+        $this->_db->insert("cellmap", $aInsert);
         $this->_cells=$cells;
     }
     
@@ -369,6 +374,12 @@ Class Map
 
     public function delete()
     {
+        $cma_id  = $this->_mapid;
+        $num     = str_pad($this->_levelNumber, 2, "0", STR_PAD_LEFT);
+        $levelid = $this->_dungeonName."/Level".$num;
+        $user    = $this->_mapusername;
+        $date    = $this->_mapuserdatemodif;
+        Gb_Log::logNotice("delete $levelid by $user, $date, cma_id=$cma_id", null, false);
         $this->_db->delete("cellmap", array($this->_db->quoteInto("cma_id=?", $this->_mapid)) );
     }
     
@@ -378,4 +389,3 @@ Class Map
 
 
 
-?>
