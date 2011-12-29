@@ -30,35 +30,37 @@ include("controllers/shared/header.phtml");
 </head>
 <body>
 
-<?php
-$cellPopups = array();
-foreach( $aNotes as $annot ) {
-    list($x,$y) = $annot[0];
-    $cellId = $mapWidth*$y+$x;
-    $cellPopups[$cellId] = "hover-box-$cellId";
-    echo "<div class=\"hover-box\" id=\"hover-box-$cellId\">\n";
-    echo str_replace("\n","<br />",htmlspecialchars($annot[1]));
-    echo "</div>\n";
-}
-
-?>
+<div id="hover-boxes">
+    <?php
+    $cellPopups = array();
+    foreach( $aNotes as $annot ) {
+        list($x,$y) = $annot[0];
+        $cellId = $mapWidth*$y+$x;
+        $cellPopups[$cellId] = "hover-box-$cellId";
+        echo "<div class=\"hover-box\" id=\"hover-box-$cellId\">";
+        echo str_replace("\n","<br />",htmlspecialchars($annot[1]));
+        echo "</div>\n";
+    }
+    ?>
+</div>
 
 <div class='main'>
     <div class='mainmap'>
         <table class="map">
         <caption>
         <? if ($urllevelup): ?>
-        <a href='<?= $urllevelup ?>'><img src='tileimages/4.gif' title='up' /></a>
+        <a href='<?= $urllevelup ?>'><img src='tileimages/4.gif' width='16' height='16' title='up' /></a>
         <? else: ?>
         <img src='tileimages/2.gif' />
         <? endif; ?>
         Map of <?= $mapName ?>
         <? if ($urlleveldown): ?>
-        <a href='<?= $urlleveldown ?>'><img src='tileimages/3.gif' title='down' /></a>
+        <a href='<?= $urlleveldown ?>'><img src='tileimages/3.gif' width='16' height='16' title='down' /></a>
         <? else: ?>
         <img src='tileimages/2.gif' />
         <? endif; ?>
         </caption>
+        <tbody>
         <?php
         
         echo "<tr>\n";
@@ -149,13 +151,25 @@ foreach( $aNotes as $annot ) {
         
         
         ?>
-        </table>
+        </tbody></table>
     </div>
     
     <div class="rightpane">
         <div style='text-align:right;'><a href='<?= $urlswitch ?>'>switch to edit mode</a></div>
         <?= $comments ?>
         <div style='text-align:right;'><a href='<?= $urleditnotes ?>' target='_blank'>edit level notes</a></div>
+        
+        <div id='leveloverview'>
+            This level hosts the
+            <span class='dmzone' dmzone='[[[00,09],[08,25]]]'>
+                Wine Cellar
+            </span>
+            and the
+            <span class='dmzone' dmzone='[ [[21,25]], [[20,26],[21,26]], [[20,27],[24,31]] ]' >
+                lonely rat realm
+            </span>
+            .
+        </div>
     </div>
     
     <div class='clear'></div>
@@ -174,6 +188,20 @@ foreach( $aNotes as $annot ) {
             <? endforeach; ?>
         </select>
     </div>
+    
 </div>
+<div id='overlaymap' style='position:absolute; opacity:.75; display:none;'>
+    <table class='map'>
+        <tbody>
+            <!-- Dynamically filled with javascript -->
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+DmmapOverview.init();
+</script>
+
 </body>
 </html>
