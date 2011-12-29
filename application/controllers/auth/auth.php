@@ -1,6 +1,6 @@
 <?php
 
-require_once("Gb/Form.php");
+require_once("Gb/Form2.php");
 require_once("Gb/Session.php");
 require_once("models/Auth.php");
 
@@ -13,18 +13,18 @@ if ($action=="logout") {
     $auth->logout();
 }
 
-$form=new Gb_Form();
+$form=new Gb_Form2();
 $form
-    ->addElement("login",    array("type"=>"TEXT",      "fMandatory"=>true))
-    ->addElement("password", array("type"=>"PASSWORD",  "fMandatory"=>true))
+    ->append(new Gb_Form_Elem_Text("login",    array("fMandatory"=>true)))
+    ->append(new Gb_Form_Elem_Password("password", array("fMandatory"=>true)))
 ;
 
 $form->load();
 $message="";
 
-if ($action==="login" && $form->validate()===true)
+if ($form->isPost() && $action==="login" && $form->validate()===true)
 {
-    $login=$auth->login($_POST["GBFORM_login"], $_POST["GBFORM_password"]);
+    $login=$auth->login($form->getElem("login")->value(), $form->getElem("password")->value());
     if ($login === false) {
         $message="Wrong creditentials";
     }

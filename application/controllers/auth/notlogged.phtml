@@ -6,21 +6,21 @@
 /* @var $urlLogin string */
 /* @var $message  string */
 
-$form
-    ->setElementParam("login",    "preInput",  "Login :")
-    ->setElementParam("login",    "postInput", "<br />")
-    ->setElementParam("password", "preInput",  "Password :")
-;
+$form->getElem("login")->preInput("Login :");
+$form->getElem("login")->postInput("<br />");
+$form->getElem("password")->preInput("Password :");
 ?>
 
 <script type='text/javascript'>
-<?= $form->getJavascript() ?>
+<?= $form->renderJavascript() ?>
 </script>
 
-<?= $form->getHtml() ?>
+<div class="GBFORM">
+    <?= $form->renderHtml() ?>
+</div>
 
 <? if (strlen($message)): ?>
     <div style="border:1px solid #f00;"><?= $message ?></div>
 <? endif; ?>
-<?= ajaxSubmit($urlLogin, "'authtargetid'", "submit", "{GBFORM_login:\$F('GBFORM_login'), GBFORM_password: \$F('GBFORM_password'), GBFORMPOST: \$F('GBFORMPOST')}") ?>
+<?= ajaxSubmit($urlLogin, "'authtargetid'", "submit", "{".$form->getAjaxArgs()."}") ?>
 
