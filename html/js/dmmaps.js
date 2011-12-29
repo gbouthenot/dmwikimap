@@ -1,4 +1,5 @@
-var DmmapOverview = (function() {
+"use strict";
+var DmmapZones = (function() {
 
    /**
     * event handler : display the overlay
@@ -43,7 +44,7 @@ var DmmapOverview = (function() {
         domTable      = $("overlaymap");
         domTable.show();
 //        domTable.appear({duration:.4, to:.75});
-    }
+    };
 
 
    /**
@@ -51,10 +52,10 @@ var DmmapOverview = (function() {
     * private static method
     */
     var _dmzoneOff = function(that, event, domevent) {
-        domTable      = $("overlaymap");
+        var domTable = $("overlaymap");
         domTable.hide();
 //        domTable.fade({duration:.4});
-    }
+    };
 
 
 
@@ -96,7 +97,7 @@ var DmmapOverview = (function() {
         }
 
         return newTable;
-    }
+    };
 
 
 
@@ -114,7 +115,7 @@ var DmmapOverview = (function() {
             }
         }
         return a;
-    }
+    };
 
 
 
@@ -152,3 +153,503 @@ var DmmapOverview = (function() {
     return __construct;
 })();
 
+
+
+
+
+
+
+var DmmapMap = (function() {
+
+   /**
+    * render a new cell
+    * @returns domnode <td>
+    * private static method
+    */
+    var _renderNewCell = function(celltype) {
+        var cell = document.createElement("td");
+        var background;
+
+        background = window.tilePrefix + celltype + window.tilePostfix;
+        cell.setAttribute("background", background);
+        return cell;
+    };
+
+
+
+   /**
+    * render the map
+    * @var mode string "view|edit"
+    * @returns domnode <tbody>
+    * private static method
+    */
+    var _render = function(mode) {
+        var x, y;
+        var newTable  = document.createElement("tbody");
+        var td, tr;
+        var firstrow, secondrow;
+
+        //first row
+        tr = document.createElement("tr");
+        tr.insert(_renderNewCell(0));
+        tr.insert(_renderNewCell(0));
+        for (x=0; x<window.mapWidth; x++) {
+            td = _renderNewCell(0);
+            if (x%10 == 0) {
+                td.setStyle({fontSize:"x-small"});
+                td.innerHTML = x;
+            }
+            tr.insert(td);
+        }
+        tr.insert(_renderNewCell(0));
+        tr.insert(_renderNewCell(0));
+        newTable.insert(tr);
+        firstrow = tr;
+
+        //second row
+        tr = document.createElement("tr");
+        tr.insert(_renderNewCell(0));
+        tr.insert(_renderNewCell(0));
+        for (x=0; x<window.mapWidth; x++) {
+            td = _renderNewCell(0);
+            if (x%10) { td.innerHTML = x%10; }
+            tr.insert(td);
+        }
+        tr.insert(_renderNewCell(0));
+        tr.insert(_renderNewCell(0));
+        newTable.insert(tr);
+        secondrow = tr;
+
+
+        var tileId = 0;
+        var firstcell, secondcell;
+        for (y=0; y<window.mapHeight; y++) {
+            var celltype;
+
+            tr = document.createElement("tr");
+
+            //first cell
+            td = _renderNewCell(0);
+            if (y%10 == 0) {
+                td.setStyle({fontSize:"x-small"});
+                td.innerHTML = y;
+            }
+            tr.insert(td);
+            firstcell = td;
+
+            //second cell
+            td = _renderNewCell(0);
+            if (y%10) {td.innerHTML = y%10;}
+            tr.insert(td);
+            secondcell = td;
+
+            for (x=0; x<window.mapWidth; x++) {
+                celltype = window.tileIds[tileId];
+                td = _renderNewCell(celltype);
+                td.setAttribute("id", "cell-" + tileId);
+                if (("view" == mode) && ((3 == celltype) || (4 == celltype) || (5 == celltype)) ) {
+                    td.setStyle({cursor:"pointer"});
+                }
+                tr.insert(td);
+                tileId++;
+            }
+
+            tr.insert(firstcell.cloneNode(true));
+            tr.insert(secondcell.cloneNode(true));
+
+            newTable.insert(tr);
+        }
+
+        //last rows : same as first ones
+        newTable.insert(firstrow.cloneNode(true));
+        newTable.insert(secondrow.cloneNode(true));
+
+        return newTable;
+    };
+
+
+   /**
+    * the constructor
+    * (returned, hosts the privileged methods)
+    */
+    var __construct = function() {
+    };
+
+
+
+   /**
+    * @var type string "view|edit"
+    * privileged static method
+    */
+    __construct.init = function(type) {
+        var mainmap = $$(".mainmap table.map tbody")[0];
+        var newmap  = _render(type);
+        mainmap.replace(newmap);
+    }
+
+
+
+    return __construct;
+})();
+
+
+
+
+
+
+
+var DmmapTips = (function() {
+    // private static variables
+    var _currentId = null;
+
+   /**
+    * install a tip (setting the right background for the cell)
+    * @returns nothing
+    * private static method
+    */
+    var _install = function(div) {
+        var id = div.getAttribute("id");            // id is "hover-box-nnn"
+        if (id.substr(0, 10) != "hover-box-") {
+            return;
+        }
+
+        var tileId = parseInt(id.substr(10));
+        var celltype = window.tileIds[tileId];
+        id = "cell-" + tileId                       // id is "cell-nnn" (the id of the td cell)
+
+        var cell = $(id);
+        var background;
+
+        background = window.tilePrefix + (100+celltype) + window.tilePostfix;
+        cell.setAttribute("background", background);
+    };
+
+
+
+   /**
+    * the constructor
+    * (returned, hosts the privileged methods)
+    */
+    var __construct = function() {
+    };
+
+
+
+   /**
+    * privileged static method
+    */
+    __construct.init = function() {
+        var hoverboxes = $$("#hover-boxes div");
+        hoverboxes.each(_install);
+    };
+
+
+
+   /**
+    * event called by a click
+    * privileged static method
+    */
+    __construct.click = function(tileId, event) {
+        var celltype = window.tileIds[tileId];
+
+        if ( (3 == celltype) || (5 == celltype) ) {
+            window.levelDown();
+        } else if (4 == celltype) {
+            window.levelUp();
+        }
+    };
+
+
+
+   /**
+    * event
+    * privileged static method
+    */
+    __construct.showTip = function(tileId, event) {
+        var hoverbox = $("hover-box-" + tileId);
+        if (null == hoverbox) { return; }
+
+        var x = event.clientX+10;
+        var y = event.clientY+10;
+        hoverbox.setStyle({top:y + "px", left:x + "px", display:"block"});
+        _currentId = tileId;
+    };
+
+
+
+   /**
+    * event
+    * privileged static method
+    */
+    __construct.hideTip = function() {
+        if (null == _currentId) { return; }
+        var hoverbox = $("hover-box-" + _currentId);
+        hoverbox.setStyle({display:"none"});
+    };
+    return __construct;
+})();
+
+
+
+
+
+
+var levelUp = function() {
+    if (urllevelup.length) {
+        window.location.replace(urllevelup);
+    }
+};
+
+var levelDown = function() {
+    if (urlleveldown.length) {
+        window.location.replace(urlleveldown);
+    }
+};
+
+
+
+
+
+
+var DmmapHandlers = (function() {
+    // private static variable
+    var _mode;
+
+   /**
+    * event
+    * private static method
+    */
+    var _mouseover = function(that, event, domevent) {
+        var tileId   = _getCellId(domevent);
+        if (null == tileId) { return; }
+
+        var celltype = window.tileIds[tileId];
+        if ("view" == _mode) {
+            DmmapTips.showTip(tileId, event);
+        }
+    };
+
+
+
+   /**
+    * event
+    * private static method
+    */
+    var _mouseout = function(that, event, domevent) {
+        if ("view" == _mode) {
+            DmmapTips.hideTip();
+        }
+    };
+
+
+
+   /**
+    * event
+    * private static method
+    */
+    var _click = function(that, event, domevent) {
+        var tileId   = _getCellId(domevent);
+        if (null == tileId) { return; }
+
+        var celltype = window.tileIds[tileId];
+        if ("view" == _mode) {
+            DmmapTips.click(tileId, event);
+        } else if ("edit" == _mode) {
+            DmmapEditor.clickMap(tileId, event);
+        }
+    };
+
+
+
+   /**
+    * Get the cell id from the domevent
+    * @returns int or null
+    */
+    var _getCellId = function(domevent) {
+        var id = domevent.getAttribute("id");            // id is "cell-nnn" or null
+        if (null == id) { return null; }
+        if (id.substr(0, 5) != "cell-") { return null; }
+
+        var tileId   = parseInt(id.substr(5));
+        return tileId;
+    };
+
+
+   /**
+    * the constructor
+    * (returned, hosts the privileged methods)
+    */
+    var __construct = function() {
+    };
+
+
+
+   /**
+    * @var mode string "view|edit"
+    * privileged static method
+    */
+    __construct.init = function(mode) {
+        _mode = mode;
+
+        var mainmap = $$("div.mainmap table.map")[0];
+        mainmap.on("mouseover", "td", _mouseover.curry(this));
+        mainmap.on("mouseout" , "td", _mouseout.curry(this));
+        mainmap.on("click",     "td", _click.curry(this));
+    };
+
+
+
+    return __construct;
+})();
+
+
+
+
+
+
+var DmmapEditor = (function() {
+    // private static variable
+    var _currentTool;   // cell to draw
+    var _lastClickId;   // id of the last cell
+    var _tileBackup;    // value of the cell before modification
+    var _clickNumber;   // number of time the user has clicked the cell
+
+
+   /**
+    * private static method
+    */
+    var _setCell = function( cellId, tileId ) {
+        var cell = $("cell-" + cellId);
+        cell.setAttribute("background", tilePrefix + tileId + tilePostfix);
+
+        tileIds[cellId] = tileId;
+    };
+
+
+
+   /**
+    * private static method
+    */
+    var _initPalette = function() {
+        var palette = $$("#palette tbody")[0];
+        while (palette.hasChildNodes()) { palette.removeChild(palette.lastChild); }
+
+        var tr = document.createElement("tr");
+        var celltype;
+        for (celltype=1; celltype<=window.tileCount; celltype++) {
+            var td = document.createElement("td");
+            var background = window.tilePrefix + (celltype) + window.tilePostfix;
+            td.setAttribute("id", "palette-" + celltype);
+            td.setAttribute("background", background);
+            tr.insert(td);
+        }
+        palette.insert(tr);
+
+        palette.on("click", "td", _clickPalette.curry(this));
+    };
+
+
+
+   /**
+    * click handler
+    * private static method
+    */
+    var _clickPalette = function(that, event, domevent) {
+        // domevent: td
+        var id = domevent.getAttribute("id");            // id is "palette-nnn" or null
+        if (null == id) { return null; }
+        if (id.substr(0, 8) != "palette-") { return null; }
+
+        var tileId   = parseInt(id.substr(8));
+        __construct.setTool(tileId);
+
+        return tileId;
+    };
+
+
+
+   /**
+    * the constructor
+    * (returned, hosts the privileged methods)
+    */
+    var __construct = function() {
+    };
+
+
+
+   /**
+    * event called by a click
+    * privileged static method
+    */
+    __construct.clickMap = function(tileId, event) {
+        var currentTile = window.tileIds[tileId];
+
+        if (tileId != _lastClickId) {
+            _lastClickId = tileId;
+            _tileBackup  = currentTile;
+            _clickNumber = 0;
+        }
+
+        // 0 : currentTool
+        // 1 : "1"
+        // 2 : "2"
+        // 3 : backup
+
+        var drawId;
+
+        do {
+            var cycle = _clickNumber % 4;
+            if (0 == cycle) {
+                drawId = _currentTool;
+            } else if (1 == cycle) {
+                drawId = 1;
+            } else if (2 == cycle) {
+                drawId = 2;
+            } else {
+                drawId = _tileBackup;
+            }
+            _clickNumber++;
+        } while (drawId == currentTile);
+
+        _setCell(tileId, drawId);
+    };
+
+
+
+   /**
+    * @var mode string "view|edit"
+    * privileged static method
+    */
+    __construct.init = function(mode) {
+        _initPalette();
+        this.setTool(3);
+    };
+
+
+
+   /**
+    * @var tool int
+    * privileged static method
+    */
+    __construct.setTool = function(tool) {
+        var node, background;
+
+        if (null != _currentTool) {
+            // reset the palette cell
+            node = $("palette-" + _currentTool);
+            background = window.tilePrefix + (_currentTool) + window.tilePostfix;
+            node.setAttribute("background", background);
+        }
+
+        _currentTool = tool;
+
+        // set the palette cell
+        node = $("palette-" + _currentTool);
+        background = window.tilePrefix + (_currentTool+100) + window.tilePostfix;
+        node.setAttribute("background", background);
+    }
+
+
+
+    return __construct;
+})();

@@ -2,14 +2,10 @@
 <head>
 <base href="<?= $mvcHref ?>" />
 
-<!-- <script src='js/prototype.js'     type='text/javascript'></script> -->
-<!-- <script src='js/scriptaculous.js' type='text/javascript'></script> -->
 <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/prototype.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js"></script>
 <script src='js/gb.js?v=3'        type='text/javascript'></script>
 <script src='js/dmmaps.js'        type='text/javascript'></script>
-<!--  <script src='js/tablesort.js'     type='text/javascript'></script> -->
-<!--  <script src='js/accordion.js'     type='text/javascript'></script> -->
 
 <meta http-equiv='Content-Type'        content='text/html; charset=ISO-8859-1'>
 <meta http-equiv='Content-Script-Type' content='text/javascript'>
@@ -91,7 +87,7 @@ img {
     background:#eee;
     float:left;
 }
-.hover-box {
+#hover-boxes div {
     border: 1px solid black;
     background: yellow;
     color: black;
@@ -108,58 +104,17 @@ span.dmzone {
 }
 </style>
 
-<script type="text/javascript">//<![CDATA[
+<script type="text/javascript">
 var currenthoverboxid = null;
 var tileIds = [<?php echo implode(",", $tileIds); ?>];
 var tileCount = <?php echo $tileCount; ?>;
 var tilePrefix = '<?php echo $tilePrefix; ?>';
 var tilePostfix = '<?php echo $tilePostfix; ?>';
-var mapId = '<?php echo $mapId; ?>';
-var mapWidth = '<?php echo $mapWidth; ?>';
-var mapHeight = '<?php echo $mapHeight; ?>';
+var mapId = <?php echo $mapId; ?>;
+var mapWidth = <?php echo $mapWidth; ?>;
+var mapHeight = <?php echo $mapHeight; ?>;
 var dungeonname = '<?php echo $dungeonName; ?>';
 var level = '<?php echo $level; ?>';
-var currentTool = 3;
-var mapid = <?= $mapId ?>;
-
-function setCellTileId( cellId, tileId ) {
-    tileIds[cellId] = tileId;
-    document.getElementById("cell-" + cellId).
-  setAttribute("background", tilePrefix + tileId + tilePostfix);
-}
-function getCellTileId( cellId ) {
-    return tileIds[cellId];
-}
-
-function cellClicked( cellId ) {
-//    var t = getCellTileId(cellId);
-//    t = (t + 1) % tileCount;
-    t = currentTool;
-    setCellTileId(cellId, t);
-}
-
-function toolClicked( toolNum )
-{
-  currentTool = toolNum;
-}
-
-function hoverPopup( event, hoverboxid ) {
-    currenthoverboxid = hoverboxid;
-    var hb = document.getElementById(hoverboxid);
-    if( hb == null ) {
-  alert("Couldn't find element '" + hoverboxid + "'");
-  return;
-    }
-    hb.style.display = "block";
-    hb.style.top = event.clientY + 1;
-    hb.style.left = event.clientX + 1;
-}
-function hoverUnpop() {
-    if( currenthoverboxid != null ) {
-  var hb = document.getElementById(currenthoverboxid);
-  hb.style.display = "none";
-    }
-    currenthoverboxid = null;
-}
-
-//]]></script>
+var urllevelup = '<?php echo $urllevelup; ?>';
+var urlleveldown = '<?php echo $urlleveldown; ?>';
+</script>

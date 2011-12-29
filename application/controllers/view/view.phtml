@@ -5,7 +5,7 @@
 // $tileCount = nn; // number of 'different' tiles
 // $tilePrefix = "tileimages/";
 // $tilePostfix = ".gif";
-// $mapId = "name of the map";
+// $mapId = id of the map;
 // $tileIds = array(tileIds);
 // $mapWidth  =
 // $mapHeight =
@@ -37,7 +37,7 @@ include("controllers/shared/header.phtml");
         list($x,$y) = $annot[0];
         $cellId = $mapWidth*$y+$x;
         $cellPopups[$cellId] = "hover-box-$cellId";
-        echo "<div class=\"hover-box\" id=\"hover-box-$cellId\">";
+        echo "<div id=\"hover-box-$cellId\">";
         echo str_replace("\n","<br />",htmlspecialchars($annot[1]));
         echo "</div>\n";
     }
@@ -47,111 +47,23 @@ include("controllers/shared/header.phtml");
 <div class='main'>
     <div class='mainmap'>
         <table class="map">
-        <caption>
-        <? if ($urllevelup): ?>
-        <a href='<?= $urllevelup ?>'><img src='tileimages/4.gif' width='16' height='16' title='up' /></a>
-        <? else: ?>
-        <img src='tileimages/2.gif' />
-        <? endif; ?>
-        Map of <?= $mapName ?>
-        <? if ($urlleveldown): ?>
-        <a href='<?= $urlleveldown ?>'><img src='tileimages/3.gif' width='16' height='16' title='down' /></a>
-        <? else: ?>
-        <img src='tileimages/2.gif' />
-        <? endif; ?>
-        </caption>
-        <tbody>
-        <?php
-        
-        echo "<tr>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        for ($x=0; $x<$mapWidth; $x++)
-        {
-          $dig="";
-          if (($x%10)==0)$dig=$x/10;
-          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-        }
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "</tr>\n";
-        echo "<tr>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        for ($x=0; $x<$mapWidth; $x++)
-        {
-          $dig=$x%10;
-          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-        }
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "</tr>\n";
-        
-        for( $y=0; $y<$mapHeight; ++$y )
-        {
-          echo "<tr>\n";
-          $dig="";
-          if (($y%10)==0)$dig=$y/10;
-          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-          $dig=$y%10;
-          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-          for( $x=0; $x<$mapWidth; ++$x )
-          {
-            $cellId = $x+$y*$mapWidth;
-            $tileId = $tileIds[$cellId];
-            echo "\t<td id=\"cell-$cellId\"";
-            if ($tileId==3 || $tileId==5) {
-                echo " onclick=\"location.replace('$urlleveldown')\" style='cursor:pointer'";
-            } elseif ($tileId==4) {
-                echo " onclick=\"location.replace('$urllevelup')\" style='cursor:pointer'";
-            }
-            if( isset($cellPopups[$cellId]) )
-            {
-                $popupId = $cellPopups[$cellId];
-                echo " onmouseover=\"hoverPopup(event,'$popupId')\"";
-                echo " onmouseout=\"hoverUnpop(event,'$popupId')\"";
-                $tileId += 100;
-            };
-            echo " background=\"{$tilePrefix}{$tileId}{$tilePostfix}\" ";
-            echo "/>\n";
-          }
-          $dig="";
-          if (($y%10)==0)$dig=$y/10;
-          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-          $dig=$y%10;
-          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-          echo "</tr>\n";
-        }
-        
-        echo "<tr>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        for ($x=0; $x<$mapWidth; $x++)
-        {
-          $dig="";
-          if (($x%10)==0)$dig=$x/10;
-          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-        }
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "</tr>\n";
-        echo "<tr>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        for ($x=0; $x<$mapWidth; $x++)
-        {
-          $dig=$x%10;
-          echo "\t<td background=\"tileimages/0.gif\">$dig</td>\n";
-        }
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "\t<td background=\"tileimages/0.gif\"></td>\n";
-        echo "</tr>\n";
-        
-        
-        
-        
-        ?>
-        </tbody></table>
+            <caption>
+                <? if ($urllevelup): ?>
+                    <a href='<?= $urllevelup ?>'><img src='tileimages/4.gif' width='16' height='16' title='up' /></a>
+                <? else: ?>
+                    <img src='tileimages/2.gif' />
+                <? endif; ?>
+                Map of <?= $mapName ?>
+                <? if ($urlleveldown): ?>
+                    <a href='<?= $urlleveldown ?>'><img src='tileimages/3.gif' width='16' height='16' title='down' /></a>
+                <? else: ?>
+                    <img src='tileimages/2.gif' />
+                <? endif; ?>
+            </caption>
+            <tbody>
+                <!-- Dynamically filled with javascript -->
+            </tbody>
+        </table>
     </div>
     
     <div class="rightpane">
@@ -161,7 +73,7 @@ include("controllers/shared/header.phtml");
         
         <div id='leveloverview'>
             This level hosts the
-            <span class='dmzone' dmzone='[[[00,09],[08,25]]]'>
+            <span class='dmzone' dmzone='[[[ 0, 9],[ 8,25]]]'>
                 Wine Cellar
             </span>
             and the
@@ -170,7 +82,7 @@ include("controllers/shared/header.phtml");
             </span>
             .
         </div>
-    </div>
+    </div><!-- .rightpane -->
     
     <div class='clear'></div>
     
@@ -188,8 +100,9 @@ include("controllers/shared/header.phtml");
             <? endforeach; ?>
         </select>
     </div>
-    
-</div>
+</div><!-- .main  -->
+
+
 <div id='overlaymap' style='position:absolute; opacity:.75; display:none;'>
     <table class='map'>
         <tbody>
@@ -200,7 +113,10 @@ include("controllers/shared/header.phtml");
 
 
 <script>
-DmmapOverview.init();
+DmmapMap.init("view");
+DmmapTips.init();
+DmmapZones.init();
+DmmapHandlers.init("view");
 </script>
 
 </body>

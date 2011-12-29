@@ -94,7 +94,7 @@ if ($action=="save") {
     $fShowDelete=true;
     
     $tileSize=array(16, 16);
-    $tileCount = 10;                    // number of 'different' tiles
+    $tileCount = 12;                    // number of 'different' tiles
     $tilePrefix = "tileimages/";
     $tilePostfix = ".gif";
 
