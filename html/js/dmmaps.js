@@ -559,7 +559,7 @@ var DmmapEditor = (function() {
 
         var tr = document.createElement("tr");
         var celltype;
-        for (celltype=1; celltype<=window.tileCount; celltype++) {
+        for (celltype=0; celltype<=window.tileCount; celltype++) {
             var td = document.createElement("td");
             var background = window.tilePrefix + (celltype) + window.tilePostfix;
             td.setAttribute("id", "palette-" + celltype);
