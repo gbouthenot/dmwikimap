@@ -1,6 +1,7 @@
 <?
 error_reporting(E_ALL);
 ini_set("display_errors", TRUE);
+header('Content-Type: text/html; charset=utf-8');
 
 require_once("Zend/Loader/Autoloader.php");
 $autoloader = Zend_Loader_Autoloader::getInstance();

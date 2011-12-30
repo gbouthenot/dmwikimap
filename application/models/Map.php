@@ -37,7 +37,8 @@ Class Map
                 "host"=>"localhost",
                 "user"=>"DBUSER",
                 "pass"=>"DBPASS",
-                "name"=>"DBNAME"
+                "name"=>"DBNAME",
+                "charset"=>"utf8",
             )
         );
     }
@@ -57,7 +58,7 @@ Class Map
             return "";
         }
         
-        return utf8_decode($page);
+        return $page;
     }
     
     protected function _getCells($dungeonName, $levelNumber)
@@ -81,31 +82,32 @@ Class Map
             foreach ($page as $l) {
                 $aVersions[]=array(
                     "id"=>$l["cma_id"],
-                    "user_name"=>utf8_decode($l["user_name"]),
-                    "datemodif"=>$l["cma_datemodif"],
-                    "comment"=>  utf8_decode($l["cma_comment"])
+                    "user_name" => $l["user_name"],
+                    "datemodif" => $l["cma_datemodif"],
+                    "comment"   => $l["cma_comment"],
+                    "cells"     => $l["cma_cells"],
                 );
                 if ($this->_mapid==$l["cma_id"]) {
                     $cells=$l["cma_cells"];
                     $this->_mapuserid=$l["cma_user_id"];
-                    $this->_mapusername=utf8_decode($l["user_name"]);
+                    $this->_mapusername=$l["user_name"];
                     $this->_mapuserdatemodif=$l["cma_datemodif"];
-                    $this->_mapusercomment=utf8_decode($l["cma_comment"]);
+                    $this->_mapusercomment=$l["cma_comment"];
                 }
             }
             // mapid not specified: return most recent
             if (empty($this->_mapid)) {
                 $this->_mapid=$page[0]["cma_id"];
                 $this->_mapuserid=$page[0]["cma_user_id"];
-                $this->_mapusername=utf8_decode($page[0]["user_name"]);
+                $this->_mapusername=$page[0]["user_name"];
                 $this->_mapuserdatemodif=$page[0]["cma_datemodif"];
-                $this->_mapusercomment=utf8_decode($page[0]["cma_comment"]);
+                $this->_mapusercomment=$page[0]["cma_comment"];
                 $cells=$page[0]["cma_cells"];
             }
         }
         
         $this->_versions=$aVersions;
-        return utf8_decode($cells);
+        return $cells;
     }
     
     protected function _setCells($dungeonName, $levelNumber, $cells, $comment)
