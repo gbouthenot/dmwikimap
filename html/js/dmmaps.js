@@ -69,14 +69,14 @@ var DmmapZones = (function() {
         var emptyRow  = document.createElement("tr");
         var emptyCell = document.createElement("td");
         var darkCell  = document.createElement("td");
-        darkCell.setAttribute("style", "background:#000;");
+        darkCell.style.background = "#000";
 
-        emptyRow.insert(emptyCell.clone());
-        emptyRow.insert(emptyCell.clone());
+        emptyRow.appendChild(emptyCell.cloneNode(true));
+        emptyRow.appendChild(emptyCell.cloneNode(true));
 
         // first 2 rows
-        newTable.insert(emptyRow.cloneNode(true));
-        newTable.insert(emptyRow.cloneNode(true));
+        newTable.appendChild(emptyRow.cloneNode(true));
+        newTable.appendChild(emptyRow.cloneNode(true));
 
         var x,y;
         var cellvalue;
@@ -87,13 +87,13 @@ var DmmapZones = (function() {
             for (x=0; x<window.mapWidth; x++) {
                 cellvalue = tab[y*window.mapWidth + x];
                 if (cellvalue) {
-                    newCell = emptyCell.clone();
+                    newCell = emptyCell.cloneNode(true);
                 } else {
-                    newCell = darkCell.clone();
+                    newCell = darkCell.cloneNode(true);
                 }
-                newRow.insert(newCell);
+                newRow.appendChild(newCell);
             }
-            newTable.insert(newRow);
+            newTable.appendChild(newRow);
         }
 
         return newTable;
@@ -140,7 +140,8 @@ var DmmapZones = (function() {
 
         // position the overlay
         var overlaymap = $("overlaymap");
-        overlaymap.setStyle( { top:top+"px", left:left+"px"} );
+        overlaymap.style.top  = top+"px";
+        overlaymap.style.left = left+"px";
 
         // delegate div#leveloverview -> span.dmzone:
         var div = $$("div#leveloverview")[0];
@@ -173,7 +174,7 @@ var DmmapMap = (function() {
     */
     var _renderNewCell = function(celltype) {
         var cell = document.createElement("td");
-        cell.setAttribute("class", "tile-" + celltype);
+        cell.className = "tile-" + celltype;
         return cell;
     };
 
@@ -192,33 +193,33 @@ var DmmapMap = (function() {
 
         //first row
         tr = document.createElement("tr");
-        tr.insert(_renderNewCell(0));
-        tr.insert(_renderNewCell(0));
+        tr.appendChild(_renderNewCell(0));
+        tr.appendChild(_renderNewCell(0));
         for (x=0; x<window.mapWidth; x++) {
             td = _renderNewCell(0);
             if (x%10 == 0) {
-                td.setStyle({fontSize:"x-small"});
+                td.style.fontSize = "xx-small";
                 td.innerHTML = x;
             }
-            tr.insert(td);
+            tr.appendChild(td);
         }
-        tr.insert(_renderNewCell(0));
-        tr.insert(_renderNewCell(0));
-        newTable.insert(tr);
+        tr.appendChild(_renderNewCell(0));
+        tr.appendChild(_renderNewCell(0));
+        newTable.appendChild(tr);
         firstrow = tr;
 
         //second row
         tr = document.createElement("tr");
-        tr.insert(_renderNewCell(0));
-        tr.insert(_renderNewCell(0));
+        tr.appendChild(_renderNewCell(0));
+        tr.appendChild(_renderNewCell(0));
         for (x=0; x<window.mapWidth; x++) {
             td = _renderNewCell(0);
             if (x%10) { td.innerHTML = x%10; }
-            tr.insert(td);
+            tr.appendChild(td);
         }
-        tr.insert(_renderNewCell(0));
-        tr.insert(_renderNewCell(0));
-        newTable.insert(tr);
+        tr.appendChild(_renderNewCell(0));
+        tr.appendChild(_renderNewCell(0));
+        newTable.appendChild(tr);
         secondrow = tr;
 
 
@@ -232,16 +233,16 @@ var DmmapMap = (function() {
             //first cell
             td = _renderNewCell(0);
             if (y%10 == 0) {
-                td.setStyle({fontSize:"x-small"});
+                td.style.fontSize = "xx-small";
                 td.innerHTML = y;
             }
-            tr.insert(td);
+            tr.appendChild(td);
             firstcell = td;
 
             //second cell
             td = _renderNewCell(0);
             if (y%10) {td.innerHTML = y%10;}
-            tr.insert(td);
+            tr.appendChild(td);
             secondcell = td;
 
             for (x=0; x<window.mapWidth; x++) {
@@ -249,21 +250,21 @@ var DmmapMap = (function() {
                 td = _renderNewCell(celltype);
                 td.setAttribute("id", "cell-" + tileId);
                 if (("view" == _mode) && ((3 == celltype) || (4 == celltype) || (5 == celltype)) ) {
-                    td.setStyle({cursor:"pointer"});
+                    td.style.cursor = "pointer";
                 }
-                tr.insert(td);
+                tr.appendChild(td);
                 tileId++;
             }
 
-            tr.insert(firstcell.cloneNode(true));
-            tr.insert(secondcell.cloneNode(true));
+            tr.appendChild(firstcell.cloneNode(true));
+            tr.appendChild(secondcell.cloneNode(true));
 
-            newTable.insert(tr);
+            newTable.appendChild(tr);
         }
 
         //last rows : same as first ones
-        newTable.insert(firstrow.cloneNode(true));
-        newTable.insert(secondrow.cloneNode(true));
+        newTable.appendChild(firstrow.cloneNode(true));
+        newTable.appendChild(secondrow.cloneNode(true));
 
         return newTable;
     };
@@ -329,7 +330,7 @@ var DmmapTips = (function() {
         id = "cell-" + tileId                       // id is "cell-nnn" (the id of the td cell)
 
         var cell = $(id);
-        cell.setAttribute("class", "tile-" + (celltype+100));
+        cell.className = "tile-" + (celltype+100);
     };
 
 
@@ -388,7 +389,9 @@ var DmmapTips = (function() {
 
         var x = event.clientX+10;
         var y = event.clientY+10;
-        hoverbox.setStyle({top:y + "px", left:x + "px", display:"block"});
+        hoverbox.style.top     = y + "px";
+        hoverbox.style.left    = x + "px";
+        hoverbox.style.display = "block";
         _currentId = tileId;
     };
 
@@ -401,7 +404,7 @@ var DmmapTips = (function() {
     __construct.hideTip = function() {
         if (null == _currentId) { return; }
         var hoverbox = $("hover-box-" + _currentId);
-        hoverbox.setStyle({display:"none"});
+        hoverbox.style.display = "none";
     };
     return __construct;
 })();
@@ -537,7 +540,7 @@ var DmmapEditor = (function() {
     */
     var _setCell = function( cellId, tileId ) {
         var cell = $("cell-" + cellId);
-        cell.setAttribute("class", "tile-" + tileId);
+        cell.className = "tile-" + tileId;
 
         tileIds[cellId] = tileId;
     };
@@ -555,11 +558,11 @@ var DmmapEditor = (function() {
         var celltype;
         for (celltype=0; celltype<=window.tileCount; celltype++) {
             var td = document.createElement("td");
-            td.setAttribute("class", "tile-" + celltype);
+            td.className = "tile-" + celltype;
             td.setAttribute("id", "palette-" + celltype);
-            tr.insert(td);
+            tr.appendChild(td);
         }
-        palette.insert(tr);
+        palette.appendChild(tr);
 
         palette.on("click", "td", _clickPalette.curry(this));
     };
@@ -653,14 +656,14 @@ var DmmapEditor = (function() {
         if (null != _currentTool) {
             // reset the palette cell
             node = $("palette-" + _currentTool);
-            node.setAttribute("class", "tile-" + _currentTool);
+            node.className = "tile-" + _currentTool;
         }
 
         _currentTool = tool;
 
         // set the palette cell
         node = $("palette-" + _currentTool);
-        node.setAttribute("class", "tile-" + (_currentTool+100));
+        node.className = "tile-" + (_currentTool+100);
     }
 
 
@@ -753,15 +756,16 @@ var DmmapVersions = (function() {
                 var option = document.createElement("option");
                 var text   = ver.user_name + ": " + ver.comment + " (" + ver.datemodif + ")";
                 option.setAttribute("value", num);
-                option.insert(text);
-                select.insert(option);
+                option.innerHTML = text;
+                select.appendChild(option);
                 num++;
             });
-            node.insert(select);
+            node.appendChild(select);
 
             // install event handler
-            select.on("change", _change.curry(this));
-            select.on("keyup", _change.curry(this));
+            Event.on(select, "change", _change.curry(this));
+            Event.on(select, "keyup", _change.curry(this));
+//            select.on("change", _change.curry(this)); // does not work in ie6
         }
     };
 
