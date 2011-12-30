@@ -61,7 +61,7 @@ ul {
     height: 16px;
     text-align: center;
     color: white;
-    font-size: smaller;
+    font-size: x-small;
 }
 .mainmap .map td, #palette td, .map span.tile {
     background-image:url(tiles.png);
@@ -106,6 +106,11 @@ img {
 .tile-110{ background-position: -160px -16px; }
 .tile-111{ background-position: -176px -16px; }
 .tile-112{ background-position: -192px -16px; }
+
+#overlaymap {
+    position:absolute;
+    opacity:.75;
+}
 
 .authtarget{
     border:1px solid #000;

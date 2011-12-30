@@ -76,16 +76,6 @@ include("controllers/shared/header.phtml");
         
         <div id='leveloverview'>
             <?= $comments ?>
-            <br />
-            This level hosts the
-            <span class='dmzone' dmzone='[[[ 0, 9],[ 8,25]]]'>
-                Wine Cellar
-            </span>
-            and the
-            <span class='dmzone' dmzone='[ [[21,25]], [[20,26],[21,26]], [[20,27],[24,31]] ]' >
-                lonely rat realm
-            </span>
-            .
         </div>
     </div><!-- .rightpane -->
     
@@ -97,7 +87,7 @@ include("controllers/shared/header.phtml");
 </div><!-- .main  -->
 
 
-<div id='overlaymap' style='position:absolute; opacity:.75; display:none;'>
+<div id='overlaymap' style='display:none;'>
     <table class='map'>
         <tbody>
             <!-- Dynamically filled with javascript -->
