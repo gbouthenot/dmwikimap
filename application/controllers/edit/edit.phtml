@@ -19,6 +19,8 @@
 // $userName
 // $userDatemodif
 // $userComment
+// $urlBase
+// $urlswitch
 
 $mvc=Gb_Mvc::singleton();
 
@@ -26,7 +28,10 @@ include("controllers/shared/header.phtml");
 
 ?>
 
-
+<script>
+tileIds = [<?php echo implode(",", $tileIds); ?>];
+mapId   = <?= $mapId ?>;
+</script>
 
 <title><?php echo "$mapName Edit" ?></title>
 </head>

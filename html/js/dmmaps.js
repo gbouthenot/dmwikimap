@@ -160,6 +160,11 @@ var DmmapZones = (function() {
 
 
 var DmmapMap = (function() {
+    // private static variables
+    var _mode;      // "view|edit"
+
+
+
 
    /**
     * render a new cell
@@ -179,11 +184,10 @@ var DmmapMap = (function() {
 
    /**
     * render the map
-    * @var mode string "view|edit"
     * @returns domnode <tbody>
     * private static method
     */
-    var _render = function(mode) {
+    var _render = function() {
         var x, y;
         var newTable  = document.createElement("tbody");
         var td, tr;
@@ -247,7 +251,7 @@ var DmmapMap = (function() {
                 celltype = window.tileIds[tileId];
                 td = _renderNewCell(celltype);
                 td.setAttribute("id", "cell-" + tileId);
-                if (("view" == mode) && ((3 == celltype) || (4 == celltype) || (5 == celltype)) ) {
+                if (("view" == _mode) && ((3 == celltype) || (4 == celltype) || (5 == celltype)) ) {
                     td.setStyle({cursor:"pointer"});
                 }
                 tr.insert(td);
@@ -278,15 +282,25 @@ var DmmapMap = (function() {
 
 
    /**
-    * @var type string "view|edit"
+    * @var mode string "view|edit"
     * privileged static method
     */
-    __construct.init = function(type) {
-        var mainmap = $$(".mainmap table.map tbody")[0];
-        var newmap  = _render(type);
-        mainmap.replace(newmap);
+    __construct.init = function(mode) {
+        _mode       = mode;
+        this.render();
     }
 
+
+
+   /**
+    * render the map
+    * privileged static method
+    */
+    __construct.render = function(mode) {
+        var mainmap = $$(".mainmap table.map tbody")[0];
+        var newmap  = _render();
+        mainmap.replace(newmap);
+    }
 
 
     return __construct;
@@ -339,6 +353,15 @@ var DmmapTips = (function() {
     * privileged static method
     */
     __construct.init = function() {
+        this.render();
+    };
+
+
+
+   /**
+    * privileged static method
+    */
+    __construct.render = function() {
         var hoverboxes = $$("#hover-boxes div");
         hoverboxes.each(_install);
     };
@@ -648,6 +671,98 @@ var DmmapEditor = (function() {
         background = window.tilePrefix + (_currentTool+100) + window.tilePostfix;
         node.setAttribute("background", background);
     }
+
+
+
+    return __construct;
+})();
+
+
+
+
+
+/**
+ * static class managing versions. Should be called *before* DmmapMap !
+ */
+var DmmapVersions = (function() {
+    // private static variables
+    var _currentNum;
+
+   /**
+    * switch to the selected version. You should call a map redraw after
+    * private static method
+    * @var num index of the version in aVersions (not the mapid)
+    */
+    var _selectVersion = function( num ) {
+        var aVersions  = window.aVersions;
+        window.tileIds = eval(aVersions[num].cells);
+        window.mapId   = aVersions[num].id;
+
+        var anchor     = $("switchtoeditmode");
+        var url        = window.urlBase + "edit/";
+        if (0 == num ) {
+            // last version
+            url       += window.dungeonname + "/" + window.level + "/";
+        } else {
+            url       += "mapid/" + window.mapId + "/";
+        }
+        anchor.setAttribute("href", url);
+    };
+
+
+
+   /**
+    * private static method
+    */
+    var _change = function(that, event, domevent) {
+        var num = domevent.value;
+        if (num != _currentNum) {
+            _currentNum = num;
+            _selectVersion(num);
+            DmmapMap.render();
+            DmmapTips.render();
+        }
+    };
+
+
+
+   /**
+    * the constructor
+    * (returned, hosts the privileged methods)
+    */
+    var __construct = function() {
+    };
+
+
+
+   /**
+    * privileged static method
+    */
+    __construct.init = function() {
+        if (window.aVersions.length > 0) {
+            _selectVersion(0);
+
+            var node = $("versions");
+            while (node.hasChildNodes()) { node.removeChild(node.lastChild); }
+            node.insert("Versions: ");
+
+            var select = document.createElement("select");
+            var num    = 0;
+            window.aVersions.each(function(ver){
+                var option = document.createElement("option");
+                var text   = ver.user_name + ": " + ver.comment + " (" + ver.datemodif + ")";
+                option.setAttribute("value", num);
+                option.insert(text);
+                select.insert(option);
+                num++;
+            });
+            node.insert(select);
+
+            // install event handler
+            select.on("change", _change.curry(this));
+            select.on("keyup", _change.curry(this));
+        }
+    };
 
 
 

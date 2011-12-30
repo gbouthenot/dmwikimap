@@ -85,7 +85,7 @@ Class Map
                     "user_name" => $l["user_name"],
                     "datemodif" => $l["cma_datemodif"],
                     "comment"   => $l["cma_comment"],
-                    "cells"     => $l["cma_cells"],
+                    "cells"     => "[" . $l["cma_cells"] . " ]",
                 );
                 if ($this->_mapid==$l["cma_id"]) {
                     $cells=$l["cma_cells"];

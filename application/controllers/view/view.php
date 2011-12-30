@@ -15,7 +15,6 @@ $args=$mvc->getArgs();
 $mapid=$args->remove("mapid");
 if (isset($mapid)) {
     $map=new Map($mapid);
-    $urlswitch=$mvc->getUrl("edit"."/"."mapid"."/".$map->getMapId());
 } else {
     $dungeonName=$args->remove("dungeonname");
     $level=$args->remove("levelnumber");
@@ -24,7 +23,6 @@ if (isset($mapid)) {
     if ($level===null) { $level=$args->remove(); }
     
     $map=new Map($dungeonName, $level);
-    $urlswitch=$mvc->getUrl("edit"."/".$map->getDungeonName()."/".$map->getLevelNumber());
 }
 
 $comments=$map->getComments();
@@ -53,6 +51,7 @@ $tilePostfix = ".gif";
 $url=$mvc->getUrl("view"."/".$dungeonName."/"."@@@level@@@");
 $urllevelup=$urlleveldown="";
 $urlVersion=$mvc->getUrl("view"."/"."mapid"."/"."@@@mapid@@@");
+$urlBase   =$mvc->getUrl();
 if ($level>0) {
     $urllevelup=str_replace("@@@level@@@", $level-1, $url);
 }

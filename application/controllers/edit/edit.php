@@ -101,6 +101,7 @@ if ($action=="save") {
     $url=$mvc->getUrl("edit"."/".$dungeonName."/"."@@@level@@@");
     $urlSave=$mvc->getUrl(array("edit","save"));
     $urlDelete=$mvc->getUrl(array("edit","delete"));
+    $urlBase=$mvc->getUrl();
     $urllevelup=$urlleveldown="";
     if ($level>0) {
         $urllevelup=str_replace("@@@level@@@", $level-1, $url);

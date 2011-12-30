@@ -12,7 +12,7 @@
 // $aNotes
 // $urlversion
 // $urleditnotes
-// $urlswitch
+// $urlBase
 // $urllevelup
 // $urlleveldown
 // $mvcHref
@@ -21,10 +21,19 @@
 // $userComment
 
 $mvc=Gb_Mvc::singleton();
-
 include("controllers/shared/header.phtml");
 
 ?>
+
+<script>
+<? if (count($aVersions)): ?>
+    var aVersions = <?= json_encode($aVersions); ?>;
+<? else: ?>
+    var aVersions = [];
+    tileIds       = [<?= implode(",", $tileIds); ?>];
+    mapId         = <?= $mapId ?>;
+<? endif; ?>
+</script>
 
 <title><?php echo "$mapName View" ?></title>
 </head>
@@ -67,7 +76,7 @@ include("controllers/shared/header.phtml");
     </div>
     
     <div class="rightpane">
-        <div style='text-align:right;'><a href='<?= $urlswitch ?>'>switch to edit mode</a></div>
+        <div style='text-align:right;'><a id="switchtoeditmode" href='#'>switch to edit mode</a></div>
         <?= $comments ?>
         <div style='text-align:right;'><a href='<?= $urleditnotes ?>' target='_blank'>edit level notes</a></div>
         
@@ -86,19 +95,8 @@ include("controllers/shared/header.phtml");
     
     <div class='clear'></div>
     
-    <div class='versions'>
-        Versions:
-        <select id='versionsid' onchange="location.replace($F('versionsid'));">
-            <? foreach ($aVersions as $version): ?>
-                <?
-                $id=$version["id"];
-                $vname=$version["user_name"].": ".htmlentities($version["comment"])." (".$version["datemodif"].")";
-                $url=str_replace("@@@mapid@@@", $id, $urlVersion);
-                $selected=  ($id==$mapId)?'selected="selected"':'';
-                 ?>
-                <option value='<?= $url ?>' <?= $selected ?>><?= $vname ?></option>
-            <? endforeach; ?>
-        </select>
+    <div id='versions'>
+        <!-- Dynamically filled with javascript -->
     </div>
 </div><!-- .main  -->
 
@@ -113,6 +111,7 @@ include("controllers/shared/header.phtml");
 
 
 <script>
+DmmapVersions.init();
 DmmapMap.init("view");
 DmmapTips.init();
 DmmapZones.init();
