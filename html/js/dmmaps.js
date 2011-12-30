@@ -697,7 +697,14 @@ var DmmapVersions = (function() {
         var aVersions  = window.aVersions;
         window.tileIds = eval(aVersions[num].cells);
         window.mapId   = aVersions[num].id;
+    };
 
+   /**
+    * Update the url in the "switch to edit mode" link
+    * private static method
+    * @var num index of the version in aVersions (not the mapid)
+    */
+    var _updateEditLinkHref = function( num ) {
         var anchor     = $("switchtoeditmode");
         var url        = window.urlBase + "edit/";
         if (0 == num ) {
@@ -719,6 +726,7 @@ var DmmapVersions = (function() {
         if (num != _currentNum) {
             _currentNum = num;
             _selectVersion(num);
+            _updateEditLinkHref(num);
             DmmapMap.render();
             DmmapTips.render();
         }
@@ -739,6 +747,8 @@ var DmmapVersions = (function() {
     * privileged static method
     */
     __construct.init = function() {
+        _updateEditLinkHref(0);
+
         if (window.aVersions.length > 0) {
             _selectVersion(0);
 
