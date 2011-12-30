@@ -3,8 +3,6 @@
 
 // $tileSize= array(width, height);
 // $tileCount = nn; // number of 'different' tiles
-// $tilePrefix = "tileimages/";
-// $tilePostfix = ".gif";
 // $mapId = id of the map;
 // $dungeonname
 // $level
@@ -43,15 +41,15 @@ mapId   = <?= $mapId ?>;
         <table class="map">
             <caption>
                 <? if ($urllevelup): ?>
-                    <a href='<?= $urllevelup ?>'><img src='tileimages/4.gif' title='up' /></a>
+                    <a href='<?= $urllevelup ?>'><span class='tile tile-4' title='level up (higher)'></span></a>
                 <? else: ?>
-                    <img src='tileimages/2.gif' />
+                    <span class='tile tile-2'></span>
                 <? endif; ?>
                 Map of <?= $mapName ?>
                 <? if ($urlleveldown): ?>
-                    <a href='<?= $urlleveldown ?>'><img src='tileimages/3.gif' title='down' /></a>
+                    <a href='<?= $urlleveldown ?>'><span class='tile tile-3' title='level down (deeper)'></span></a>
                 <? else: ?>
-                    <img src='tileimages/2.gif' />
+                    <span class='tile tile-2'></span>
                 <? endif; ?>
             </caption>
             <tbody>

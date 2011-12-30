@@ -95,8 +95,6 @@ if ($action=="save") {
     
     $tileSize=array(16, 16);
     $tileCount = 12;                    // number of 'different' tiles
-    $tilePrefix = "tileimages/";
-    $tilePostfix = ".gif";
 
     $url=$mvc->getUrl("edit"."/".$dungeonName."/"."@@@level@@@");
     $urlSave=$mvc->getUrl(array("edit","save"));

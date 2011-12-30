@@ -173,10 +173,7 @@ var DmmapMap = (function() {
     */
     var _renderNewCell = function(celltype) {
         var cell = document.createElement("td");
-        var background;
-
-        background = window.tilePrefix + celltype + window.tilePostfix;
-        cell.setAttribute("background", background);
+        cell.setAttribute("class", "tile-" + celltype);
         return cell;
     };
 
@@ -332,10 +329,7 @@ var DmmapTips = (function() {
         id = "cell-" + tileId                       // id is "cell-nnn" (the id of the td cell)
 
         var cell = $(id);
-        var background;
-
-        background = window.tilePrefix + (100+celltype) + window.tilePostfix;
-        cell.setAttribute("background", background);
+        cell.setAttribute("class", "tile-" + (celltype+100));
     };
 
 
@@ -543,7 +537,7 @@ var DmmapEditor = (function() {
     */
     var _setCell = function( cellId, tileId ) {
         var cell = $("cell-" + cellId);
-        cell.setAttribute("background", tilePrefix + tileId + tilePostfix);
+        cell.setAttribute("class", "tile-" + tileId);
 
         tileIds[cellId] = tileId;
     };
@@ -561,9 +555,8 @@ var DmmapEditor = (function() {
         var celltype;
         for (celltype=0; celltype<=window.tileCount; celltype++) {
             var td = document.createElement("td");
-            var background = window.tilePrefix + (celltype) + window.tilePostfix;
+            td.setAttribute("class", "tile-" + celltype);
             td.setAttribute("id", "palette-" + celltype);
-            td.setAttribute("background", background);
             tr.insert(td);
         }
         palette.insert(tr);
@@ -655,21 +648,19 @@ var DmmapEditor = (function() {
     * privileged static method
     */
     __construct.setTool = function(tool) {
-        var node, background;
+        var node;
 
         if (null != _currentTool) {
             // reset the palette cell
             node = $("palette-" + _currentTool);
-            background = window.tilePrefix + (_currentTool) + window.tilePostfix;
-            node.setAttribute("background", background);
+            node.setAttribute("class", "tile-" + _currentTool);
         }
 
         _currentTool = tool;
 
         // set the palette cell
         node = $("palette-" + _currentTool);
-        background = window.tilePrefix + (_currentTool+100) + window.tilePostfix;
-        node.setAttribute("background", background);
+        node.setAttribute("class", "tile-" + (_currentTool+100));
     }
 
 

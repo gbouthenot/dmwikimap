@@ -45,8 +45,6 @@ $urleditnotes="http://dmwiki.atomas.com/w/index.php?title=$dungeonName/Levels_no
 
 $tileSize=array(16, 16);
 $tileCount = 12;                    // number of 'different' tiles
-$tilePrefix = "tileimages/";
-$tilePostfix = ".gif";
 
 $url=$mvc->getUrl("view"."/".$dungeonName."/"."@@@level@@@");
 $urllevelup=$urlleveldown="";
