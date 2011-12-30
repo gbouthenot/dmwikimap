@@ -208,12 +208,12 @@ Class Map
             $lines=array();
             preg_match_all('/^\{(\d{1,2},\d{1,2},\d{1,2})\}\s*(.+?)\s*(?:<br>|<br \/>)*$/m', $wikipage, $lines);
             // Commentaire regexp:
-            //        /^                              : début de ligne
-            //        \{(\d{1,2},\d{1,2},\d{1,2})\}   : doit commencer par {n,n,n} n=nombre entre 0 et 99 à capturer
-            //        \s*                             : éventuellement des espaces
-            //        (.+?)                           : le texte à capturer +?=ungreedy
-            //        \s*                             : éventuellement des espaces
-            //        (?:<br>|<br \/>)*               : éventuellement des <br> ou <br /> (ne pas capturer)
+            //        /^                              : dÃ©but de ligne
+            //        \{(\d{1,2},\d{1,2},\d{1,2})\}   : doit commencer par {n,n,n} n=nombre entre 0 et 99 Ã  capturer
+            //        \s*                             : Ã©ventuellement des espaces
+            //        (.+?)                           : le texte Ã  capturer +?=ungreedy
+            //        \s*                             : Ã©ventuellement des espaces
+            //        (?:<br>|<br \/>)*               : Ã©ventuellement des <br> ou <br /> (ne pas capturer)
             //        $/                              : fin de ligne
             //        m                               : traite ligne par ligne
             
@@ -238,8 +238,11 @@ Class Map
             $aComments=array();
             $currentlevel=null;
             foreach ($lines[0] as $line) {
-                if ( strcasecmp(substr($line, 0, 15), '<a name="Level_') == 0 ) {
-                    $currentlevel=(int) substr($line, 15, 2);
+                if ( (strcasecmp(substr($line, 0, 3), '<h3')==0)
+                     && (strcasecmp(substr($line, -5), '</h3>')==0)
+                     && ( false !== ($pos=strpos($line, "<span class=\"mw-headline\" id=\"Level_")) )
+                   ) {
+                    $currentlevel=(int) substr($line, $pos+36, 2);
                 }
                 //if ( strcasecmp(substr($line, 0, 11), "[[Category:") == 0 ) {continue;}
                 if ($currentlevel===null) {continue;}

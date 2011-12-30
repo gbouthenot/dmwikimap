@@ -73,6 +73,10 @@ ul {
     border: none;
 }
 
+#leveloverview h3 span.editsection {
+    display:none;
+}
+
 img {
     border:0;
 }
