@@ -198,7 +198,7 @@ var DmmapMap = (function() {
         for (x=0; x<window.mapWidth; x++) {
             td = _renderNewCell(0);
             if (x%10 == 0) {
-                td.style.fontSize = "xx-small";
+                td.style.fontSize = "x-small";
                 td.innerHTML = x;
             }
             tr.appendChild(td);
@@ -233,7 +233,7 @@ var DmmapMap = (function() {
             //first cell
             td = _renderNewCell(0);
             if (y%10 == 0) {
-                td.style.fontSize = "xx-small";
+                td.style.fontSize = "x-small";
                 td.innerHTML = y;
             }
             tr.appendChild(td);
