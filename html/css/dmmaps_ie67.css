@@ -1,0 +1,13 @@
+@charset "UTF-8";
+select, input.text, textarea, input.password {
+    background-image:url(inputbg.gif);
+}
+input.submit {
+    background-image:url(submitbg.gif);
+}
+.mainmap .map td, #palette td, .map span.tile {
+    background-image:url(tiles.png);
+}
+#overlaymap {
+    filter:alpha(opacity=75);
+}
