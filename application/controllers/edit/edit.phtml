@@ -43,13 +43,13 @@ mapId   = <?= $mapId ?>;
                 <? if ($urllevelup): ?>
                     <a href='<?= $urllevelup ?>'><span class='tile tile-4' title='level up (higher)'></span></a>
                 <? else: ?>
-                    <span class='tile tile-2'></span>
+                    <span class='emptytile'></span>
                 <? endif; ?>
                 Map of <?= $mapName ?>
                 <? if ($urlleveldown): ?>
                     <a href='<?= $urlleveldown ?>'><span class='tile tile-3' title='level down (deeper)'></span></a>
                 <? else: ?>
-                    <span class='tile tile-2'></span>
+                    <span class='emptytile'></span>
                 <? endif; ?>
             </caption>
             <tbody>
@@ -66,7 +66,10 @@ mapId   = <?= $mapId ?>;
             <tbody>
                 <!-- Dynamically filled with javascript -->
            </tbobdy>
-       </table>
+        </table>
+        <div class="tooldesc">
+            Tool currently selected : <span>none</span>
+        </div>
 
        <div class='inputcomment'>
            <b>This version:</b><br />

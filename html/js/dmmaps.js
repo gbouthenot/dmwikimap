@@ -533,6 +533,7 @@ var DmmapEditor = (function() {
     var _lastClickId;   // id of the last cell
     var _tileBackup;    // value of the cell before modification
     var _clickNumber;   // number of time the user has clicked the cell
+    var _toolsDesc = ["empty cell", "wall cell", "open cell", "staircase down", "staircase up", "pit", "buttonless vertical door", "buttonless horizontal door", "openable vertical door", "openable horizontal door", "imaginary wall", "removable wall", "visble/invisble teleporter" ];
 
 
    /**
@@ -601,6 +602,9 @@ var DmmapEditor = (function() {
     * privileged static method
     */
     __construct.clickMap = function(tileId, event) {
+        if (null == _currentTool) {
+            return;
+        }
         var currentTile = window.tileIds[tileId];
 
         if (tileId != _lastClickId) {
@@ -641,7 +645,6 @@ var DmmapEditor = (function() {
     */
     __construct.init = function(mode) {
         _initPalette();
-        this.setTool(3);
     };
 
 
@@ -664,10 +667,21 @@ var DmmapEditor = (function() {
         // set the palette cell
         node = $("palette-" + _currentTool);
         node.className = "tile-" + (_currentTool+100);
+
+        node = $$("div.tooldesc span")[0];
+        node.innerHTML = this.getToolDesc(tool);
     }
 
 
 
+   /**
+    * @var tool int 0-12 or 100-112
+    * @returns string tool description
+    * privileged static method
+    */
+    __construct.getToolDesc = function(tool) {
+        return _toolsDesc[tool % 100];
+    };
     return __construct;
 })();
 
