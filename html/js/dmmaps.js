@@ -374,6 +374,7 @@ var DmmapMap = (function() {
     }
 
 
+
     return __construct;
 })();
 
@@ -874,15 +875,24 @@ var DmmapSkin = (function() {
 
 
     __construct.selectChange = function(that, event, domevent) {
-        var newImage = domevent.value;
+        var i,n;
+        var ssheets = document.styleSheets;         // all styleSheets. Find the right one
+        var ssheet;
 
-        var ssheet = document.styleSheets[1];       // second on if the IE one
-        if (typeof(ssheet) == "undefined") {
-            ssheet = document.styleSheets[0];       // if not available, take the first one
+        // find the last one whose href contain "dmmaps"
+        n = ssheets.length;
+        for (i=n-1; i>=0 ;i--) {
+            var thisheet = ssheets[i];
+            if ( (null != thisheet.href) && (thisheet.href.indexOf("dmmaps") != -1) ) {
+                ssheet = thisheet;
+                break;
+            }
+        }
+        if ( (null == ssheet) || ("undefined" == typeof(ssheet.cssRules))) {
+            return;
         }
 
         var rule;
-        var i, n;
         n = ssheet.cssRules.length;
         for (i=0; i<n; i++) {
             var r = ssheet.cssRules.item(i);
@@ -899,6 +909,7 @@ var DmmapSkin = (function() {
             return;
         }
 
+        var newImage = domevent.value;
         rule.style.backgroundImage = "url(" + newImage + ")";
     }
 
