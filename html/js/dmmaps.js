@@ -594,103 +594,6 @@ var levelDown = function() {
 
 
 
-var DmmapHandlers = (function() {
-    // private static variable
-    var _mode;
-
-   /**
-    * event
-    * private static method
-    */
-    var _mouseover = function(that, event, domevent) {
-        var tileId   = _getCellId(domevent);
-        if (null == tileId) { return; }
-
-        var celltype = window.tileIds[tileId];
-        if ("view" == _mode) {
-            DmmapTips.showTip(tileId, event, domevent);
-        }
-    };
-
-
-
-   /**
-    * event
-    * private static method
-    */
-    var _mouseout = function(that, event, domevent) {
-        if ("view" == _mode) {
-            DmmapTips.hideTip();
-            DmmapOverlay.hide();
-        }
-    };
-
-
-
-   /**
-    * event
-    * private static method
-    */
-    var _click = function(that, event, domevent) {
-        var tileId   = _getCellId(domevent);
-        if (null == tileId) { return; }
-
-        var celltype = window.tileIds[tileId];
-        if ("view" == _mode) {
-            DmmapTips.click(tileId, event);
-        } else if ("edit" == _mode) {
-            DmmapEditor.clickMap(tileId, event);
-        }
-    };
-
-
-
-   /**
-    * Get the cell id from the domevent
-    * @returns int or null
-    */
-    var _getCellId = function(domevent) {
-        var id = domevent.getAttribute("id");            // id is "cell-nnn" or null
-        if (null == id) { return null; }
-        if (id.substr(0, 5) != "over-") { return null; }
-
-        var tileId   = parseInt(id.substr(5));
-        return tileId;
-    };
-
-
-   /**
-    * the constructor
-    * (returned, hosts the privileged methods)
-    */
-    var __construct = function() {
-    };
-
-
-
-   /**
-    * @var mode string "view|edit"
-    * privileged static method
-    */
-    __construct.init = function(mode) {
-        _mode = mode;
-
-        var mainmap = $$("#overlaymap table.map")[0];
-        mainmap.on("mouseover", "td", _mouseover.curry(this));
-        mainmap.on("mouseout" , "td", _mouseout.curry(this));
-        mainmap.on("click",     "td", _click.curry(this));
-    };
-
-
-
-    return __construct;
-})();
-
-
-
-
-
-
 var DmmapEditor = (function() {
     // private static variable
     var _currentTool;   // cell to draw
@@ -951,3 +854,161 @@ var DmmapVersions = (function() {
 
     return __construct;
 })();
+
+
+
+
+
+
+/**
+ * static class
+*/
+var DmmapSkin = (function() {
+   /**
+    * the constructor
+    * (returned, hosts the privileged methods)
+    */
+    var __construct = function() {
+    };
+
+
+
+    __construct.selectChange = function(that, event, domevent) {
+        var newImage = domevent.value;
+
+        var ssheet = document.styleSheets[1];       // second on if the IE one
+        if (typeof(ssheet) == "undefined") {
+            ssheet = document.styleSheets[0];       // if not available, take the first one
+        }
+
+        var rule;
+        var i, n;
+        n = ssheet.cssRules.length;
+        for (i=0; i<n; i++) {
+            var r = ssheet.cssRules.item(i);
+            if (typeof(r.selectorText) == "undefined") { continue; }
+            if (r.selectorText.indexOf("THETILESET") != -1) {
+                rule = r;
+                break;
+            }
+            
+        }
+        
+        if (null == rule) {
+            // not found
+            return;
+        }
+
+        rule.style.backgroundImage = "url(" + newImage + ")";
+    }
+
+
+
+    return __construct;
+})();
+
+
+
+
+
+
+var DmmapHandlers = (function() {
+    // private static variable
+    var _mode;
+
+   /**
+    * event
+    * private static method
+    */
+    var _mouseover = function(that, event, domevent) {
+        var tileId   = _getCellId(domevent);
+        if (null == tileId) { return; }
+
+        var celltype = window.tileIds[tileId];
+        if ("view" == _mode) {
+            DmmapTips.showTip(tileId, event, domevent);
+        }
+    };
+
+
+
+   /**
+    * event
+    * private static method
+    */
+    var _mouseout = function(that, event, domevent) {
+        if ("view" == _mode) {
+            DmmapTips.hideTip();
+            DmmapOverlay.hide();
+        }
+    };
+
+
+
+   /**
+    * event
+    * private static method
+    */
+    var _click = function(that, event, domevent) {
+        var tileId   = _getCellId(domevent);
+        if (null == tileId) { return; }
+
+        var celltype = window.tileIds[tileId];
+        if ("view" == _mode) {
+            DmmapTips.click(tileId, event);
+        } else if ("edit" == _mode) {
+            DmmapEditor.clickMap(tileId, event);
+        }
+    };
+
+
+
+   /**
+    * Get the cell id from the domevent
+    * @returns int or null
+    */
+    var _getCellId = function(domevent) {
+        var id = domevent.getAttribute("id");            // id is "cell-nnn" or null
+        if (null == id) { return null; }
+        if (id.substr(0, 5) != "over-") { return null; }
+
+        var tileId   = parseInt(id.substr(5));
+        return tileId;
+    };
+
+
+   /**
+    * the constructor
+    * (returned, hosts the privileged methods)
+    */
+    var __construct = function() {
+    };
+
+
+
+   /**
+    * @var mode string "view|edit"
+    * privileged static method
+    */
+    __construct.init = function(mode) {
+        _mode = mode;
+
+        var mainmap = $$("#overlaymap table.map")[0];
+        mainmap.on("mouseover", "td", _mouseover.curry(this));
+        mainmap.on("mouseout" , "td", _mouseout.curry(this));
+        mainmap.on("click",     "td", _click.curry(this));
+
+        var node = $("tilesetselect");
+        Event.on(node, "change", DmmapSkin.selectChange.curry(this));
+    };
+
+
+
+    return __construct;
+})();
+
+
+
+
+
+

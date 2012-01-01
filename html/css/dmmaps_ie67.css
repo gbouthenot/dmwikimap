@@ -5,7 +5,7 @@ select, input.text, textarea, input.password {
 input.submit {
     background-image:url(submitbg.gif);
 }
-.mainmap .map td, #palette td, .map span.tile {
+.mainmap .map td, #palette td, .map span.tile, .THETILESET {
     background-image:url(tiles_256.png);
 }
 #overlaymap {

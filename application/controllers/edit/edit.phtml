@@ -62,22 +62,27 @@ mapId   = <?= $mapId ?>;
     <div class="rightpane">
         <div style='text-align:right;'><a href='<?= $urlswitch ?>'>switch to view mode</a></div>
 
-        <table id="palette" class="map">
-            <tbody>
-                <!-- Dynamically filled with javascript -->
-           </tbobdy>
-        </table>
-        <div class="tooldesc">
-            Tool currently selected : <span>none</span>
+        <div id='infobox'>
+            <table id="palette" class="map">
+                <tbody>
+                    <!-- Dynamically filled with javascript -->
+               </tbobdy>
+            </table>
+            <div class="tooldesc">
+                Tool currently selected : <span>none</span>
+            </div>
+
+            Tileset : <select id='tilesetselect'><option value="tiles_64.png">default</option><option value="tiles.png">old</option></select>
         </div>
 
-       <div class='inputcomment'>
-           <b>This version:</b><br />
-           <?= htmlentities($userName) ?>: <?= htmlentities($userComment) ?> (<?= $userDatemodif ?>)<br />
-           <br />
-           <b>New version comments:</b>
-           <br /><input type='text' id='comment' class='inputcomment2' />
-       </div>
+
+        <div class='inputcomment'>
+            <b>This version:</b><br />
+            <?= htmlentities($userName) ?>: <?= htmlentities($userComment) ?> (<?= $userDatemodif ?>)<br />
+            <br />
+            <b>New version comments:</b>
+            <br /><input type='text' id='comment' class='inputcomment2' />
+        </div>
 
 
        <div id='authtargetid' class='authtarget'>
