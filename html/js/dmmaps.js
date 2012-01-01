@@ -12,13 +12,19 @@ var DmmapZone = (function() {
         var tab = [];
         // fills the zones with 1 (transparent)
         dmzone.each(function(coords){
-            var x1  = coords[0][0];
-            var y1  = coords[0][1];
+            var x1  = coords[0];
+            var y1  = coords[1];
+            
+            if (typeof(coords[0][0])!="undefined" && typeof(coords[0][1])!="undefined") {
+                x1      = coords[0][0];
+                y1      = coords[0][1];
+            }
+
             // by default : coord2 = coord1 (draw a single cell)
             var x2  = x1;
             var y2  = y1;
             var x, y, n;
-            if (2 == coords.length) {
+            if (2 == coords.length && typeof(coords[1][0])!="undefined" &&  typeof(coords[1][1])!="undefined") {
                 // 2 coordinates : draw a box of cells
                 var x2  = coords[1][0];
                 var y2  = coords[1][1];
