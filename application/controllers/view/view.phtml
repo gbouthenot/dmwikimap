@@ -87,7 +87,7 @@ include("controllers/shared/header.phtml");
 </div><!-- .main  -->
 
 
-<div id='overlaymap' style='display:none;'>
+<div id='overlaymap'>
     <table class='map'>
         <tbody>
             <!-- Dynamically filled with javascript -->
@@ -99,8 +99,9 @@ include("controllers/shared/header.phtml");
 <script>
 DmmapVersions.init();
 DmmapMap.init("view");
+DmmapOverlay.init();
+DmmapZone.init();
 DmmapTips.init();
-DmmapZones.init();
 DmmapHandlers.init("view");
 </script>
 

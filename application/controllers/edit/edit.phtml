@@ -107,9 +107,17 @@ mapId   = <?= $mapId ?>;
     <div class='clear'></div>
 </div><!-- .main -->
 
+<div id='overlaymap'>
+    <table class='map'>
+        <tbody>
+            <!-- Dynamically filled with javascript -->
+        </tbody>
+    </table>
+</div>
 
 <script>
 DmmapMap.init("edit");
+DmmapOverlay.init();
 DmmapEditor.init();
 DmmapHandlers.init("edit");
 </script>

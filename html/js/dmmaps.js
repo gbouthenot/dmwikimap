@@ -1,20 +1,15 @@
 "use strict";
-var DmmapZones = (function() {
-
+var DmmapZone = (function() {
    /**
-    * event handler : display the overlay
+    * handler: mouse is on a <dmzone>
     * private static method
     */
-    var _dmzoneOn = function(that, event, domevent) {
+    var _mouseover = function(that, event, domevent) {
         // get the zone data
         var dmzone = domevent.getAttribute("dmzone");
         dmzone     = eval(dmzone);
-        //console.log("dmzone=", dmzone);
-        
-        // get an array filled with 0 (darken everything)
-        var tab = _getEmptyArray(window.mapWidth, window.mapHeight);
-        //console.log("tab=", tab);
 
+        var tab = [];
         // fills the zones with 1 (transparent)
         dmzone.each(function(coords){
             var x1  = coords[0][0];
@@ -30,47 +25,72 @@ var DmmapZones = (function() {
             }
             for (y=y1; y<=y2; y++) {
                 for (x=x1; x<=x2; x++) {
-                    var n  = y*window.mapHeight + x;
-                    tab[n] = 1;
+                    var n  = y*window.mapWidth + x;
+                    tab.push(n);
                 }
             }
         });
-        //console.log("tab=", tab);
 
-        var domTable  = $$("#overlaymap table.map tbody")[0];
-        var newTable  = _createDom(tab);
-        domTable.replace(newTable);
-
-        domTable      = $("overlaymap");
-        domTable.show();
-//        domTable.appear({duration:.4, to:.75});
+        DmmapOverlay.updateCells(tab, "dark", "");
     };
 
 
+
    /**
-    * Event handler: remove the overlay
+    * handler
     * private static method
     */
-    var _dmzoneOff = function(that, event, domevent) {
-        var domTable = $("overlaymap");
-        domTable.hide();
-//        domTable.fade({duration:.4});
+    var _mouseout = function(that, event, domevent) {
+        DmmapOverlay.updateCells([], "", "");
     };
 
 
 
    /**
-    * render a new tbody with the array specified
+    * the constructor
+    * (returned, hosts the priveleged methods)
+    */
+    var __construct = function() {
+    };
+
+
+
+   /**
+    * install handlers
+    * privileged static method
+    */
+    __construct.init = function() {
+        // delegate div#leveloverview -> span.dmzone:
+        var div = $$("div#leveloverview")[0];
+        div.on("mouseover", "span.dmzone", _mouseover.curry(this));
+        div.on("mouseout", "span.dmzone", _mouseout.curry(this));
+    }
+
+
+
+    return __construct;
+})();
+
+
+
+
+
+
+var DmmapOverlay = (function() {
+    // private static variables
+    var _coords;            // coordinate of the first <td> cell
+
+   /**
+    * render a new tbody with cells
     * @returns domnode <tbody>
     * private static method
     */
-    var _createDom = function(tab) {
+    var _createCells = function(mapWidth, mapHeight) {
         var newTable  = document.createElement("tbody");
         var emptyRow  = document.createElement("tr");
         var emptyCell = document.createElement("td");
-        var darkCell  = document.createElement("td");
-        darkCell.style.background = "#000";
 
+        // each rows begin with two blank cells
         emptyRow.appendChild(emptyCell.cloneNode(true));
         emptyRow.appendChild(emptyCell.cloneNode(true));
 
@@ -79,42 +99,21 @@ var DmmapZones = (function() {
         newTable.appendChild(emptyRow.cloneNode(true));
 
         var x,y;
-        var cellvalue;
         var newCell;
         var newRow;
-        for (y=0; y<window.mapHeight; y++) {
+        var n = 0;
+        for (y=0; y<mapHeight; y++) {
             newRow = emptyRow.cloneNode(true);
-            for (x=0; x<window.mapWidth; x++) {
-                cellvalue = tab[y*window.mapWidth + x];
-                if (cellvalue) {
-                    newCell = emptyCell.cloneNode(true);
-                } else {
-                    newCell = darkCell.cloneNode(true);
-                }
+            for (x=0; x<mapWidth; x++) {
+                newCell = emptyCell.cloneNode(true);
+                newCell.setAttribute("id", "over-"+n);
                 newRow.appendChild(newCell);
+                n++;
             }
             newTable.appendChild(newRow);
         }
 
         return newTable;
-    };
-
-
-
-   /**
-    * returns a array filled with 0
-    * @returns array
-    * private static method
-    */
-    var _getEmptyArray = function(width, height) {
-        var a = new Array();
-        var x,y;
-        for (y=0; y<height; y++) {
-            for (x=0; x<width; x++) {
-                a.push(0);
-            }
-        }
-        return a;
     };
 
 
@@ -138,15 +137,83 @@ var DmmapZones = (function() {
         var left  = tbody.getClientRects()[0].left;
         var top   = tbody.getClientRects()[0].top;
 
+        _coords = [ left + 32, top + 32 ];
+
         // position the overlay
         var overlaymap = $("overlaymap");
         overlaymap.style.top  = top+"px";
         overlaymap.style.left = left+"px";
 
-        // delegate div#leveloverview -> span.dmzone:
-        var div = $$("div#leveloverview")[0];
-        div.on("mouseover", "span.dmzone", _dmzoneOn.curry(this));
-        div.on("mouseout", "span.dmzone", _dmzoneOff.curry(this));
+        // insert new cells
+        var domTable  = $$("#overlaymap table.map tbody")[0];
+        var newTable  = _createCells(window.mapWidth, window.mapHeight);
+        domTable.replace(newTable);
+    };
+
+
+
+   /**
+    * highlight the individual cells given into the array
+    * @param array aRes [ "z,x,y", "x,y" ]
+    * privileged static method
+    */
+    __construct.highlightCells = function(aRes) {
+        var tab = [];
+        aRes.each(function(a) {
+            tab.push(a[1]*window.mapWidth + a[0]);
+        });
+
+        if (0 == tab.length) {
+            return;
+        }
+
+        this.updateCells(tab, "", "high");
+    };
+
+
+
+   /**
+    * set all the cells class to defaultClass, except the ones in tab which are set to setClass
+    * @var array tab index of the cells
+    * @var string defaultClass
+    * @var string setClass 
+    * privileged static method
+    */
+    __construct.updateCells = function(tab, defaultClass, setClass) {
+        // reset all cells class
+        var allcells = $$("#overlaymap td");
+        allcells.each(function(cell) {
+            cell.className = defaultClass;
+        });
+
+        var n, val, td;
+        var len = tab.length
+        for (n=0; n<len; n++) {
+            val = tab[n];
+            td = $("over-" + val);
+            td.className = setClass;
+        }
+    };
+
+
+
+   /**
+    * returns the coords of the first cell
+    * privileged static method
+    * @returns array [x,y]
+    */
+    __construct.getCoords = function() {
+        return _coords;
+    };
+
+
+
+   /**
+    * hide the overlay. Set all cells to transparent
+    * privileged static method
+    */
+    __construct.hide = function() {
+        DmmapOverlay.updateCells([], "", "");
     };
 
 
@@ -314,12 +381,63 @@ var DmmapTips = (function() {
     // private static variables
     var _currentId = null;
 
+
+
+   /**
+    * parse the tip for coordinates (z,x,y or x,y)
+    * @param string text
+    * @returns array ["0,18,11", "0,19,7"]
+    * private static method
+    */
+    var _parseText = function(text) {
+        var rxp = new RegExp("(\\d{1,2}\\s*,)?(\\d{1,2}\\s*,\\s*\\d{1,2})", "g");
+        var match;
+        var res = [];
+
+        while( (match = rxp.exec(text)) ) {
+            res.push(match[0]);
+        }
+
+        return res;
+    };
+
+
+
+   /**
+    * filter an coords to get only the coords contained in the current level
+    * @param array  ["z,x,y", "x,y"]
+    * @returns array [ [18,11], [19,7] ]
+    * private static method
+    */
+    var _filterParsed = function(aIn) {
+        var aOut = [];
+
+        aIn.each(function(sCoords) {
+            var z,x,y;
+            var aCoord = sCoords.split(",");
+            if (3 == aCoord.length) {
+                z = parseInt(aCoord[0]); x = aCoord[1]; y = aCoord[2];
+            } else {
+                z = window.level; x = aCoord[0]; y = aCoord[1];
+            }
+            x = parseInt(x); y= parseInt(y);
+            if (z != window.level || x >= window.mapWidth || y >= window.mapHeight) {
+                return;
+            }
+            aOut.push( [x,y] );
+        });
+
+        return aOut;
+    };
+
+
+
    /**
     * install a tip (setting the right background for the cell)
     * @returns nothing
     * private static method
     */
-    var _install = function(div) {
+    var _updateCells = function(div) {
         var id = div.getAttribute("id");            // id is "hover-box-nnn"
         if (id.substr(0, 10) != "hover-box-") {
             return;
@@ -358,7 +476,7 @@ var DmmapTips = (function() {
     */
     __construct.render = function() {
         var hoverboxes = $$("#hover-boxes div");
-        hoverboxes.each(_install);
+        hoverboxes.each(_updateCells);
     };
 
 
@@ -383,16 +501,52 @@ var DmmapTips = (function() {
     * event
     * privileged static method
     */
-    __construct.showTip = function(tileId, event) {
+    __construct.showTip = function(tileId, event, domevent) {
         var hoverbox = $("hover-box-" + tileId);
         if (null == hoverbox) { return; }
 
-        var x = event.clientX+10;
-        var y = event.clientY+10;
-        hoverbox.style.top     = y + "px";
-        hoverbox.style.left    = x + "px";
+        // get coords of the first cell of the overlay
+        var overCoord = DmmapOverlay.getCoords();
+        var xpos = overCoord[0];      // where to display the tip
+        var ypos = overCoord[1];
+
+        // compute the cell x,y
+        var xtile = tileId % window.mapWidth;
+        var ytile = Math.floor(tileId / window.mapWidth);
+
+        var text = hoverbox.innerHTML;
+
+        var aRes = _parseText(text);
+        aRes     = _filterParsed(aRes);
+
+        DmmapOverlay.highlightCells(aRes);
+
+        if (aRes.length) {
+            // compute a good xtile, ytile to display the tip
+            var ymax = ytile;
+            aRes.each(function(a) {
+                ymax = Math.max( ymax, a[1] );
+            });
+
+            var xmax = 0;
+            if (ytile == ymax) {
+                xmax = xtile;
+            }
+            aRes.each(function(a) {
+                if (a[1] == ymax) {
+                    xmax = Math.max( xmax, a[0] );
+                }
+            });
+
+            xtile = xmax;
+            ytile = ymax;
+        }
+
+        hoverbox.style.top     = (ypos + ytile*16 + 16) + "px";
+        hoverbox.style.left    = (xpos + xtile*16 + 16) + "px";
         hoverbox.style.display = "block";
         _currentId = tileId;
+
     };
 
 
@@ -406,6 +560,9 @@ var DmmapTips = (function() {
         var hoverbox = $("hover-box-" + _currentId);
         hoverbox.style.display = "none";
     };
+
+
+
     return __construct;
 })();
 
@@ -445,7 +602,7 @@ var DmmapHandlers = (function() {
 
         var celltype = window.tileIds[tileId];
         if ("view" == _mode) {
-            DmmapTips.showTip(tileId, event);
+            DmmapTips.showTip(tileId, event, domevent);
         }
     };
 
@@ -458,6 +615,7 @@ var DmmapHandlers = (function() {
     var _mouseout = function(that, event, domevent) {
         if ("view" == _mode) {
             DmmapTips.hideTip();
+            DmmapOverlay.hide();
         }
     };
 
@@ -488,7 +646,7 @@ var DmmapHandlers = (function() {
     var _getCellId = function(domevent) {
         var id = domevent.getAttribute("id");            // id is "cell-nnn" or null
         if (null == id) { return null; }
-        if (id.substr(0, 5) != "cell-") { return null; }
+        if (id.substr(0, 5) != "over-") { return null; }
 
         var tileId   = parseInt(id.substr(5));
         return tileId;
@@ -511,7 +669,7 @@ var DmmapHandlers = (function() {
     __construct.init = function(mode) {
         _mode = mode;
 
-        var mainmap = $$("div.mainmap table.map")[0];
+        var mainmap = $$("#overlaymap table.map")[0];
         mainmap.on("mouseover", "td", _mouseover.curry(this));
         mainmap.on("mouseout" , "td", _mouseout.curry(this));
         mainmap.on("click",     "td", _click.curry(this));
