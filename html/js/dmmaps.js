@@ -88,7 +88,7 @@ var DmmapZone = (function () {
 var DmmapOverlay = (function () {
     "use strict";
     // private static variables
-    var _coords;            // coordinate of the first <td> cell
+    var _coords = null;     // coordinate of the first <td> cell
 
    /**
     * render a new tbody with cells
@@ -240,7 +240,7 @@ var DmmapOverlay = (function () {
 var DmmapMap = (function () {
     "use strict";
     // private static variables
-    var _mode;      // "view|edit"
+    var _mode = null;       // "view|edit"
 
 
 
@@ -604,10 +604,10 @@ var levelDown = function () {
 
 var DmmapEditor = (function () {
     // private static variable
-    var _currentTool;   // cell to draw
-    var _lastClickId;   // id of the last cell
-    var _tileBackup;    // value of the cell before modification
-    var _clickNumber;   // number of time the user has clicked the cell
+    var _currentTool = null;    // cell to draw
+    var _lastClickId = null;    // id of the last cell
+    var _tileBackup  = null;    // value of the cell before modification
+    var _clickNumber = null;    // number of time the user has clicked the cell
     var _toolsDesc = ["empty cell", "wall cell", "open cell", "staircase down", "staircase up", "pit", "buttonless vertical door", "buttonless horizontal door", "openable vertical door", "openable horizontal door", "imaginary wall", "removable wall", "visble/invisble teleporter" ];
 
 
@@ -777,7 +777,7 @@ var DmmapEditor = (function () {
 var DmmapVersions = (function () {
     "use strict";
     // private static variables
-    var _currentNum;
+    var _currentNum = null;
 
    /**
     * switch to the selected version. You should call a map redraw after
@@ -942,7 +942,7 @@ var DmmapSkin = (function () {
 var DmmapHandlers = (function () {
     "use strict";
     // private static variable
-    var _mode;
+    var _mode = null;
 
 
 
@@ -1053,8 +1053,8 @@ var DmmapHandlers = (function () {
 var KeyWatcher = (function () {
     "use strict";
     // private static variable
-    var _handlerKeyUp;
-    var _handlerKeyDown;
+    var _handlerKeyUp   = null;
+    var _handlerKeyDown =null;
 
 
 
