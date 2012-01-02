@@ -933,7 +933,6 @@ var DmmapSkin = (function() {
 var DmmapHandlers = (function() {
     // private static variable
     var _mode;
-    var _shift;
 
    /**
     * event
@@ -947,7 +946,7 @@ var DmmapHandlers = (function() {
         if ("view" == _mode) {
             DmmapTips.showTip(tileId, event, domevent);
         } else if ("edit" == _mode) {
-            if (_shift) {
+            if (KeyWatcher.shift) {
                 DmmapEditor.clickMap(tileId, event, 1);
             }
         }
@@ -1015,7 +1014,6 @@ var DmmapHandlers = (function() {
     */
     __construct.init = function(mode) {
         _mode = mode;
-        _shift = 0;
 
         var mainmap = $$("#overlaymap table.map")[0];
         mainmap.on("mouseover", "td", _mouseover.curry(this));
@@ -1025,17 +1023,77 @@ var DmmapHandlers = (function() {
         var node = $("tilesetselect");
         Event.on(node, "change", DmmapSkin.selectChange.curry(this));
 
-        Event.on(document, "keydown", function(event){
-            var key = event.which || event.keyCode;
-            if (key == 16) { _shift = 1; }
-        });
-        Event.on(document, "keyup", function(event){
-            var key = event.which || event.keyCode;
-            if (key == 16) { _shift = 0; }
-        });
+        KeyWatcher.install();
     };
 
 
 
     return __construct;
 })(); // DmmapHandlers
+
+
+
+
+
+
+var KeyWatcher = (function() {
+    // private static variable
+    var _handlerKeyUp;
+    var _handlerKeyDown;
+
+
+
+   /**
+    * the constructor
+    * (returned, hosts the privileged methods)
+    */
+    var __construct = function() {
+    };
+
+
+
+   /**
+    * @var mode string "view|edit"
+    * privileged static method
+    */
+    __construct.install = function() {
+        if (null != _handlerKeyUp) { return ; } // already installed
+
+        _handlerKeyDown = Event.on(document, "keydown", function(event){
+            if ( !this.shift   && (event.which || event.keyCode) == 16) { this.shift   = 1; console.log("SHIFT");   }
+            if ( !this.control && (event.which || event.keyCode) == 17) { this.control = 1; console.log("CONTROL"); }
+            if ( !this.alt     && (event.which || event.keyCode) == 18) { this.alt     = 1; console.log("ALT");     }
+        }.bind(this));
+        _handlerKeyUp = Event.on(document, "keyup", function(event){
+            if (  this.shift   && (event.which || event.keyCode) == 16) { this.shift   = 0; console.log("shift");   }
+            if (  this.control && (event.which || event.keyCode) == 17) { this.control = 0; console.log("control"); }
+            if (  this.alt     && (event.which || event.keyCode) == 18) { this.alt     = 0; console.log("alt")     ;}
+        }.bind(this));
+    };
+
+
+
+   /**
+    * @var mode string "view|edit"
+    * privileged static method
+    */
+    __construct.remove = function() {
+        if (null == _handlerKeyUp) { return ; } // not installed
+
+        _handlerKeyUp.stop();
+        _handlerKeyDown.stop();
+        _handlerKeyUp   = null;
+        _handlerKeyDown = null;
+    };
+
+
+
+    /* public variables */
+    __construct.shift   = 0;
+    __construct.control = 0;
+    __construct.alt     = 0;
+
+
+
+    return __construct;
+})(); // KeyWatcher
