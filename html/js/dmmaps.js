@@ -75,7 +75,7 @@ var DmmapZone = (function() {
 
 
     return __construct;
-})();
+})(); // DmmapZone
 
 
 
@@ -225,7 +225,7 @@ var DmmapOverlay = (function() {
 
 
     return __construct;
-})();
+})(); // DmmapOverlay
 
 
 
@@ -376,7 +376,7 @@ var DmmapMap = (function() {
 
 
     return __construct;
-})();
+})(); // DmmapMap
 
 
 
@@ -571,7 +571,7 @@ var DmmapTips = (function() {
 
 
     return __construct;
-})();
+})(); // DmmapTips
 
 
 
@@ -667,9 +667,10 @@ var DmmapEditor = (function() {
 
    /**
     * event called by a click
+    * @param int drawMode 0:click 1:mouseover
     * privileged static method
     */
-    __construct.clickMap = function(tileId, event) {
+    __construct.clickMap = function(tileId, event, drawMode) {
         if (null == _currentTool) {
             return;
         }
@@ -688,19 +689,25 @@ var DmmapEditor = (function() {
 
         var drawId;
 
-        do {
-            var cycle = _clickNumber % 4;
-            if (0 == cycle) {
-                drawId = _currentTool;
-            } else if (1 == cycle) {
-                drawId = 1;
-            } else if (2 == cycle) {
-                drawId = 2;
-            } else {
-                drawId = _tileBackup;
-            }
-            _clickNumber++;
-        } while (drawId == currentTile);
+        if (drawMode == 0) {
+            // click
+            do {
+                var cycle = _clickNumber % 4;
+                if (0 == cycle) {
+                    drawId = _currentTool;
+                } else if (1 == cycle) {
+                    drawId = 1;
+                } else if (2 == cycle) {
+                    drawId = 2;
+                } else {
+                    drawId = _tileBackup;
+                }
+                _clickNumber++;
+            } while (drawId == currentTile);
+        } else {
+            // mouseover
+            drawId = _currentTool;
+        }
 
         _setCell(tileId, drawId);
     };
@@ -751,7 +758,7 @@ var DmmapEditor = (function() {
         return _toolsDesc[tool % 100];
     };
     return __construct;
-})();
+})(); // DmmapEditor
 
 
 
@@ -854,7 +861,7 @@ var DmmapVersions = (function() {
 
 
     return __construct;
-})();
+})(); // DmmapVersions
 
 
 
@@ -916,7 +923,7 @@ var DmmapSkin = (function() {
 
 
     return __construct;
-})();
+})(); // DmmapSkin
 
 
 
@@ -926,6 +933,7 @@ var DmmapSkin = (function() {
 var DmmapHandlers = (function() {
     // private static variable
     var _mode;
+    var _shift;
 
    /**
     * event
@@ -938,6 +946,10 @@ var DmmapHandlers = (function() {
         var celltype = window.tileIds[tileId];
         if ("view" == _mode) {
             DmmapTips.showTip(tileId, event, domevent);
+        } else if ("edit" == _mode) {
+            if (_shift) {
+                DmmapEditor.clickMap(tileId, event, 1);
+            }
         }
     };
 
@@ -968,7 +980,7 @@ var DmmapHandlers = (function() {
         if ("view" == _mode) {
             DmmapTips.click(tileId, event);
         } else if ("edit" == _mode) {
-            DmmapEditor.clickMap(tileId, event);
+            DmmapEditor.clickMap(tileId, event, 0);
         }
     };
 
@@ -1003,6 +1015,7 @@ var DmmapHandlers = (function() {
     */
     __construct.init = function(mode) {
         _mode = mode;
+        _shift = 0;
 
         var mainmap = $$("#overlaymap table.map")[0];
         mainmap.on("mouseover", "td", _mouseover.curry(this));
@@ -1011,15 +1024,18 @@ var DmmapHandlers = (function() {
 
         var node = $("tilesetselect");
         Event.on(node, "change", DmmapSkin.selectChange.curry(this));
+
+        Event.on(document, "keydown", function(event){
+            var key = event.which || event.keyCode;
+            if (key == 16) { _shift = 1; }
+        });
+        Event.on(document, "keyup", function(event){
+            var key = event.which || event.keyCode;
+            if (key == 16) { _shift = 0; }
+        });
     };
 
 
 
     return __construct;
-})();
-
-
-
-
-
-
+})(); // DmmapHandlers
