@@ -608,8 +608,7 @@ var DmmapEditor = (function () {
     var _lastClickId = null;    // id of the last cell
     var _tileBackup  = null;    // value of the cell before modification
     var _clickNumber = null;    // number of time the user has clicked the cell
-    var _toolsDesc = ["empty cell", "wall cell", "open cell", "staircase down", "staircase up", "pit", "buttonless vertical door", "buttonless horizontal door", "openable vertical door", "openable horizontal door", "imaginary wall", "removable wall", "visble/invisble teleporter" ];
-
+    var _toolsDesc   = ["empty cell", "wall cell", "open cell", "staircase down", "staircase up", "pit", "buttonless vertical door", "buttonless horizontal door", "openable vertical door", "openable horizontal door", "imaginary wall", "removable wall", "visble/invisble teleporter" ];
 
    /**
     * private static method
@@ -779,6 +778,8 @@ var DmmapVersions = (function () {
     // private static variables
     var _currentNum = null;
 
+
+
    /**
     * switch to the selected version. You should call a map redraw after
     * private static method
@@ -942,7 +943,8 @@ var DmmapSkin = (function () {
 var DmmapHandlers = (function () {
     "use strict";
     // private static variable
-    var _mode = null;
+    var _mode     = null;
+    var _drawMode = 0;
 
 
 
@@ -974,8 +976,13 @@ var DmmapHandlers = (function () {
         if ("view" === _mode) {
             DmmapTips.showTip(tileId, event, domevent);
         } else if ("edit" === _mode) {
-            if (KeyWatcher.shift) {
-                DmmapEditor.clickMap(tileId, event, 1);
+            if (_drawMode) {
+                if (KeyWatcher.shift) {
+                    DmmapEditor.clickMap(tileId, event, 1);
+                } else {
+                    // end draw
+                    _drawMode = 0;
+                }
             }
         }
     };
@@ -1007,7 +1014,10 @@ var DmmapHandlers = (function () {
         if ("view" === _mode) {
             DmmapTips.click(tileId, event);
         } else if ("edit" === _mode) {
-            DmmapEditor.clickMap(tileId, event, 0);
+            if (KeyWatcher.shift) {
+                _drawMode = 1;
+            }
+            DmmapEditor.clickMap(tileId, event, _drawMode);
         }
     };
 
@@ -1054,7 +1064,7 @@ var KeyWatcher = (function () {
     "use strict";
     // private static variable
     var _handlerKeyUp   = null;
-    var _handlerKeyDown =null;
+    var _handlerKeyDown = null;
 
 
 
