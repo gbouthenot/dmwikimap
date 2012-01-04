@@ -40,6 +40,7 @@ var DmmapZone = (function () {
             }
         });
 
+        document.body.style.cursor = "help";
         DmmapOverlay.updateCells(tab, "dark", "");
     };
 
@@ -50,6 +51,7 @@ var DmmapZone = (function () {
     * private static method
     */
     var _mouseout = function (that, event, domevent) {
+        document.body.style.cursor = null;
         DmmapOverlay.updateCells([], "", "");
     };
 
@@ -327,9 +329,6 @@ var DmmapMap = (function () {
                 celltype = window.tileIds[tileId];
                 td = _renderNewCell(celltype);
                 td.setAttribute("id", "cell-" + tileId);
-                if (("view" === _mode) && ((3 === celltype) || (4 === celltype) || (5 === celltype)) ) {
-                    td.style.cursor = "pointer";
-                }
                 tr.appendChild(td);
                 tileId++;
             }
@@ -974,6 +973,9 @@ var DmmapHandlers = (function () {
 
         var celltype = window.tileIds[tileId];
         if ("view" === _mode) {
+            if ( (3 === celltype) || (4 === celltype) || (5 === celltype) ) {
+                document.body.style.cursor = "pointer";
+            }
             DmmapTips.showTip(tileId, event, domevent);
         } else if ("edit" === _mode) {
             if (_drawMode) {
@@ -995,6 +997,7 @@ var DmmapHandlers = (function () {
     */
     var _mouseout = function (that, event, domevent) {
         if ("view" === _mode) {
+            document.body.style.cursor = null;
             DmmapTips.hideTip();
             DmmapOverlay.hide();
         }
