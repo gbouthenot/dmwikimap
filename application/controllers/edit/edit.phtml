@@ -121,10 +121,12 @@ mapId   = <?= $mapId ?>;
 </div>
 
 <script>
-DmmapMap.init("edit");
-DmmapOverlay.init();
-DmmapEditor.init();
-DmmapHandlers.init("edit");
+Event.observe(window, "load", function() {
+    DmmapMap.init("edit");
+    DmmapOverlay.init();
+    DmmapEditor.init();
+    DmmapHandlers.init("edit");
+});
 </script>
 
 </body>

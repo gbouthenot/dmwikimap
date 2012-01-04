@@ -101,12 +101,14 @@ include("controllers/shared/header.phtml");
 
 
 <script>
-DmmapVersions.init();
-DmmapMap.init("view");
-DmmapOverlay.init();
-DmmapZone.init();
-DmmapTips.init();
-DmmapHandlers.init("view");
+Event.observe(window, "load", function() {
+    DmmapVersions.init();
+    DmmapMap.init("view");
+    DmmapOverlay.init();
+    DmmapZone.init();
+    DmmapTips.init();
+    DmmapHandlers.init("view");
+});
 </script>
 
 </body>
