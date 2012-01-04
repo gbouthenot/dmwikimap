@@ -60,7 +60,7 @@ ul {
 /* .map span .tile used by table caption. There is another rule to add the background image.
    The overlay map also match ".map td", but it should not have background-image set, because, we use <td background='000'>
  */
-.map td, #palette td, .map span.tile, .map span.emptytile {
+.map td, .map th, #palette td, .map span.tile, .map span.emptytile {
     margin: 0;
     padding: 0;
     width: 16px;

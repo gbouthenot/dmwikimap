@@ -101,8 +101,8 @@ var DmmapOverlay = (function () {
         var emptyCell = document.createElement("td");
 
         // each rows begin with two blank cells
-        emptyRow.appendChild(emptyCell.cloneNode(true));
-        emptyRow.appendChild(emptyCell.cloneNode(true));
+        emptyRow.appendChild(document.createElement("th"));
+        emptyRow.appendChild(document.createElement("th"));
 
         // first 2 rows
         newTable.appendChild(emptyRow.cloneNode(true));
