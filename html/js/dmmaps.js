@@ -90,9 +90,14 @@ var DmmapZone = (function () {
     */
     __construct.init = function () {
         // delegate div#leveloverview -> span.dmzone:
-        var div = $$("div#leveloverview")[0];
-        div.on("mouseover", "span.dmzone", _mouseover.curry(this));
-        div.on("mouseout",  "span.dmzone", _mouseout.curry(this));
+        var divs = $$("div#leveloverview, #sandbox");
+        divs.invoke("on", "mouseover", "span.dmzone", _mouseover.curry(this));
+        divs.invoke("on", "mouseout",  "span.dmzone", _mouseout.curry(this));
+        
+        var sandbox = $$("#sandbox textarea")[0];
+        if ("undefined" !== typeof sandbox ) {
+        	Event.on(sandbox, "keyup", function(a,e){$$("#sandbox .result")[0].innerHTML=e.value.replace("<dmzone ","<span class='dmzone' ").replace(" zone="," dmzone=").replace("</dmzone>","</span>");});
+        }
     };
 
 

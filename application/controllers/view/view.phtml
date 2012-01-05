@@ -81,6 +81,15 @@ include("controllers/shared/header.phtml");
         <div id='leveloverview'>
             <?= $comments ?>
         </div>
+
+        <div id='sandbox'>
+            <textarea>
+This is a sample &lt;dmzone zone="[[[1,2],[3,4]], [5,6]]"&gt;Sandbox dmzone&lt;/dmzone&gt; (mouseover to see)
+            </textarea>
+            <div class="result">
+                This is a sample <span class="dmzone" dmzone="[[[1,2],[3,4]], [5,6]]">Sandbox dmzone</span> (mouseover to see)
+            </div>
+        </div>
     </div><!-- .rightpane -->
     
     <div class='clear'></div>

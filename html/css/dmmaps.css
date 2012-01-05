@@ -154,3 +154,9 @@ span.dmzone {
     border-bottom:1px dashed #555;
     display:inline-block;
 }
+#sandbox textarea {
+    width:500px;
+    font-family: Lucida Sans Typewriter,consolas,monospace;
+    font-size:80%;
+}
+
