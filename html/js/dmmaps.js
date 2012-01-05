@@ -109,6 +109,7 @@ var DmmapOverlay = (function () {
     "use strict";
     // private static variables
     var _coords = null;     // coordinate of the first <td> cell
+    var _isVisible = null;  // if an overlay is shown
 
    /**
     * render a new tbody with cells
@@ -223,6 +224,8 @@ var DmmapOverlay = (function () {
             td = $("over-" + val);
             td.className = setClass;
         }
+
+        _isVisible = true;
     };
 
 
@@ -243,7 +246,10 @@ var DmmapOverlay = (function () {
     * privileged static method
     */
     __construct.hide = function () {
-        DmmapOverlay.updateCells([], "", "");
+        if (false !== _isVisible) {
+            DmmapOverlay.updateCells([], "", "");
+            _isVisible = false;
+        }
     };
 
 
@@ -944,6 +950,7 @@ var DmmapHandlers = (function () {
     // private static variable
     var _mode     = null;
     var _drawMode = 0;
+    var _cursor   = null;       // since document.body.style.cursor changing in painfully slow as hell under IE6, make minimal changes
 
 
 
@@ -974,7 +981,10 @@ var DmmapHandlers = (function () {
         var celltype = window.tileIds[tileId];
         if ("view" === _mode) {
             if ( (3 === celltype) || (4 === celltype) || (5 === celltype) ) {
-                document.body.style.cursor = "pointer";
+                if (_cursor !== "pointer") {
+                    document.body.style.cursor = "pointer";
+                    _cursor = "pointer";
+                }
             }
             DmmapTips.showTip(tileId, event, domevent);
         } else if ("edit" === _mode) {
@@ -1002,7 +1012,10 @@ var DmmapHandlers = (function () {
     */
     var _mouseout = function (that, event, domevent) {
         if ("view" === _mode) {
-            document.body.style.cursor = null;
+            if (_cursor !== null) {
+                document.body.style.cursor = null;
+                _cursor = null;
+            }
             DmmapTips.hideTip();
             DmmapOverlay.hide();
         }
