@@ -1,5 +1,23 @@
 /*jshint maxerr:9999 evil:true browser:true prototypejs:true white:false*/
 
+var levelUp = function () {
+    "use strict";
+    if (window.urllevelup.length) {
+        window.location.replace(window.urllevelup);
+    }
+};
+
+var levelDown = function () {
+    if (window.urlleveldown.length) {
+        window.location.replace(window.urlleveldown);
+    }
+};
+
+
+
+
+
+
 var DmmapZone = (function () {
     "use strict";
 
@@ -583,24 +601,6 @@ var DmmapTips = (function () {
 
 
 
-var levelUp = function () {
-    "use strict";
-    if (window.urllevelup.length) {
-        window.location.replace(window.urllevelup);
-    }
-};
-
-var levelDown = function () {
-    if (window.urlleveldown.length) {
-        window.location.replace(window.urlleveldown);
-    }
-};
-
-
-
-
-
-
 var DmmapEditor = (function () {
     // private static variable
     var _currentTool = null;    // cell to draw
@@ -987,6 +987,11 @@ var DmmapHandlers = (function () {
                 }
             }
         }
+
+        var cellinfo = $("cellinfo");
+        var y = Math.floor(tileId / 32);
+        var x = tileId % 32;
+        cellinfo.innerHTML = "Current cell: " + x + ", " + y;
     };
 
 
@@ -1001,6 +1006,8 @@ var DmmapHandlers = (function () {
             DmmapTips.hideTip();
             DmmapOverlay.hide();
         }
+        var cellinfo = $("cellinfo");
+        cellinfo.innerHTML = "";
     };
 
 
@@ -1125,3 +1132,59 @@ var KeyWatcher = (function () {
 
     return __construct;
 })(); // KeyWatcher
+
+
+
+
+
+
+var Dmmap = (function () {
+    "use strict";
+
+
+
+   /**
+    * the constructor
+    * (returned, hosts the privileged methods)
+    */
+    var __construct = function () {
+    };
+
+
+
+   /**
+    * @var mode string "view|edit"
+    * privileged static method
+    */
+    __construct.bootstrap = function () {
+        var mode = "view";
+        if ( -1 !== window.location.href.indexOf("/edit/") ) {
+            mode = "edit";
+        }
+
+        if ("view" === mode) {
+            DmmapVersions.init();
+            DmmapMap.init("view");
+            DmmapOverlay.init();
+            DmmapZone.init();
+//            DmmapHint.init();
+            DmmapTips.init();
+            DmmapHandlers.init("view");
+        } else if ("edit" === mode) {
+            DmmapMap.init("edit");
+            DmmapOverlay.init();
+            DmmapEditor.init();
+            DmmapHandlers.init("edit");
+        }
+    };
+
+
+
+    return __construct;
+})(); // DmmapHandlers
+
+
+
+
+
+

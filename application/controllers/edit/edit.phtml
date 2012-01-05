@@ -110,6 +110,9 @@ mapId   = <?= $mapId ?>;
     </div><!-- .rightpane -->
 
     <div class='clear'></div>
+    <div id='cellinfo'>
+        <!-- Dynamically filled with javascript -->
+    </div>
 </div><!-- .main -->
 
 <div id='overlaymap'>
@@ -119,15 +122,6 @@ mapId   = <?= $mapId ?>;
         </tbody>
     </table>
 </div>
-
-<script>
-Event.observe(window, "load", function() {
-    DmmapMap.init("edit");
-    DmmapOverlay.init();
-    DmmapEditor.init();
-    DmmapHandlers.init("edit");
-});
-</script>
 
 </body>
 </html>

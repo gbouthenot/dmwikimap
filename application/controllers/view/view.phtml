@@ -88,6 +88,9 @@ include("controllers/shared/header.phtml");
     <div id='versions'>
         <!-- Dynamically filled with javascript -->
     </div>
+    <div id='cellinfo'>
+        <!-- Dynamically filled with javascript -->
+    </div>
 </div><!-- .main  -->
 
 
@@ -99,17 +102,6 @@ include("controllers/shared/header.phtml");
     </table>
 </div>
 
-
-<script>
-Event.observe(window, "load", function() {
-    DmmapVersions.init();
-    DmmapMap.init("view");
-    DmmapOverlay.init();
-    DmmapZone.init();
-    DmmapTips.init();
-    DmmapHandlers.init("view");
-});
-</script>
 
 </body>
 </html>
