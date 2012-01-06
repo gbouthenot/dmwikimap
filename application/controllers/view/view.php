@@ -8,6 +8,7 @@
 
 
 require_once("models/Map.php");
+require_once("models/Hints.php");
 
 $mvc=Gb_Mvc::singleton();
 $args=$mvc->getArgs();
@@ -38,6 +39,7 @@ $aVersions=$map->getVersions();
 $mapName = ucfirst($dungeonName)." / Level ".$level;
 $mapId=$map->getMapId();
 $urleditnotes="http://dmwiki.atomas.com/w/index.php?title=$dungeonName/Levels_notes&action=edit&section=".($level+2);
+$Hints = new Hints("../data/hints/" . strtolower($dungeonName) . ".txt");
 
 
 $tileSize=array(16, 16);

@@ -58,7 +58,6 @@ var DmmapZone = (function () {
             }
         });
 
-        document.body.style.cursor = "help";
         DmmapOverlay.updateCells(tab, "dark", "");
     };
 
@@ -69,8 +68,7 @@ var DmmapZone = (function () {
     * private static method
     */
     var _mouseout = function (that, event, domevent) {
-        document.body.style.cursor = null;
-        DmmapOverlay.updateCells([], "", "");
+        DmmapOverlay.hide();
     };
 
 
@@ -104,6 +102,125 @@ var DmmapZone = (function () {
 
     return __construct;
 })(); // DmmapZone
+
+
+
+
+
+
+var DmmapHint = (function () {
+    "use strict";
+
+   /**
+    * handler: mouse is on a <dmhint>
+    * private static method
+    */
+    var _mouseoverHint = function (that, event, domevent) {
+        // get the hint text
+        var text = domevent.select(".text")[0].innerHTML;
+        
+        // nodes
+        var overlayhint = $("overlayhint");
+        var levelhints  = $("levelhints");
+        
+        // position the overlay
+        var rect = levelhints.getClientRects()[0];
+        overlayhint.style.left     = (rect.left + window.pageXOffset)       + "px";
+        overlayhint.style.width    = (rect.width - 10)                      + "px";
+            rect = domevent.getClientRects();
+        rect     = rect[ rect.length - 1 ]; // because a <span may span other multiple lines
+        overlayhint.style.top      = (rect.bottom + window.pageYOffset + 1) + "px";
+        overlayhint.innerHTML      = text;
+        overlayhint.show();
+        
+        // get the zone data
+        var dmzone = eval("[" + domevent.select(".cells")[0].innerHTML + "]");
+
+        var tab = [];
+        // fills the zones with 1 (transparent)
+        dmzone.each(function (coords) {
+            var x1  = coords[0];
+            var y1  = coords[1];
+            
+            if (typeof(coords[0][0]) !== "undefined" && typeof(coords[0][1]) !== "undefined") {
+                x1      = coords[0][0];
+                y1      = coords[0][1];
+            }
+
+            // by default : coord2 = coord1 (draw a single cell)
+            var x2  = x1;
+            var y2  = y1;
+            var x, y, n;
+            if (2 === coords.length && typeof(coords[1][0]) !== "undefined" &&  typeof(coords[1][1]) !== "undefined") {
+                // 2 coordinates : draw a box of cells
+                x2  = coords[1][0];
+                y2  = coords[1][1];
+            }
+            for (y = y1; y <= y2; y++) {
+                for (x = x1; x <= x2; x++) {
+                    n  = y * window.mapWidth + x;
+                    tab.push(n);
+                }
+            }
+        });
+
+        if (tab.length) {
+            DmmapOverlay.updateCells(tab, "", "high");
+        }
+    };
+
+
+
+    /**
+     * handler: mouse is on the overlay hint : hide it
+     * private static method
+     */
+    var _mouseoverOverlay = function (that, event, domevent) {
+        domevent.hide();
+    };
+
+
+
+   /**
+    * handler
+    * private static method
+    */
+    var _mouseoutHint = function (that, event, domevent) {
+        var node = $("overlayhint");
+        node.hide();
+        DmmapOverlay.hide();
+    };
+
+
+
+   /**
+    * the constructor
+    * (returned, hosts the priveleged methods)
+    */
+    var __construct = function () {
+    };
+
+
+
+   /**
+    * install handlers
+    * privileged static method
+    */
+    __construct.init = function () {
+        var div;
+        // delegate div#levelhints and div#overlayhint
+        div = $("levelhints");
+        div.on("mouseover", "dmhint", _mouseoverHint.curry(this));
+        div.on("mouseout",  "dmhint", _mouseoutHint.curry(this));
+        
+        div = $("overlayhint");
+        div.on("mouseover", _mouseoverOverlay.curry(this));
+    };
+
+
+
+    return __construct;
+})(); // DmmapHint
 
 
 
@@ -170,8 +287,8 @@ var DmmapOverlay = (function () {
     __construct.init = function () {
         // get position of the overlay
         var tbody = $$("div.mainmap table.map tbody")[0];
-        var left  = tbody.getClientRects()[0].left;
-        var top   = tbody.getClientRects()[0].top;
+        var left  = tbody.getClientRects()[0].left + window.pageXOffset;
+        var top   = tbody.getClientRects()[0].top  + window.pageYOffset;
 
         _coords = [ left + 32, top + 32 ];
 
@@ -583,8 +700,8 @@ var DmmapTips = (function () {
             ytile = ymax;
         }
 
-        hoverbox.style.top     = (ypos + (ytile * 16) + 16) + "px";
-        hoverbox.style.left    = (xpos + (xtile * 16) + 16) + "px";
+        hoverbox.style.top     = (window.pageYOffset + ypos + (ytile * 16) + 16) + "px";
+        hoverbox.style.left    = (window.pageXOffset + xpos + (xtile * 16) + 16) + "px";
         hoverbox.style.display = "block";
         _currentId = tileId;
 
@@ -1185,7 +1302,7 @@ var Dmmap = (function () {
             DmmapMap.init("view");
             DmmapOverlay.init();
             DmmapZone.init();
-//            DmmapHint.init();
+            DmmapHint.init();
             DmmapTips.init();
             DmmapHandlers.init("view");
         } else if ("edit" === mode) {
@@ -1199,7 +1316,7 @@ var Dmmap = (function () {
 
 
     return __construct;
-})(); // DmmapHandlers
+})(); // Dmmap
 
 
 
