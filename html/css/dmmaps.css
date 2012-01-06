@@ -156,7 +156,7 @@ span.dmzone {
 	cursor:help;
 }
 
-#levelhints dmhint     { display:inline-block; width:166px; font-size:80%; }
+#levelhints div.dmhint { display:inline-block; width:166px; font-size:80%; }
 #levelhints span.text  { display:none; }
 #levelhints span.cells { display:none; }
 #levelhints span.title { border-bottom:1px dashed #555; cursor:help; }

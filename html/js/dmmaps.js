@@ -125,11 +125,11 @@ var DmmapHint = (function () {
         
         // position the overlay
         var rect = levelhints.getClientRects()[0];
-        overlayhint.style.left     = (rect.left + window.pageXOffset)       + "px";
-        overlayhint.style.width    = (rect.width - 10)                      + "px";
+        overlayhint.style.left     = (rect.left + (typeof window.pageXOffset==="undefined"?0:window.pageXOffset))       + "px";
+        overlayhint.style.width    = (rect.right - rect.left - 10) + "px";  // ie6 doesn't know width
             rect = domevent.getClientRects();
         rect     = rect[ rect.length - 1 ]; // because a <span may span other multiple lines
-        overlayhint.style.top      = (rect.bottom + window.pageYOffset + 1) + "px";
+        overlayhint.style.top      = (rect.bottom + (typeof window.pageYOffset==="undefined"?0:window.pageYOffset) + 1) + "px";
         overlayhint.innerHTML      = text;
         overlayhint.show();
         
@@ -210,8 +210,8 @@ var DmmapHint = (function () {
         var div;
         // delegate div#levelhints and div#overlayhint
         div = $("levelhints");
-        div.on("mouseover", "dmhint", _mouseoverHint.curry(this));
-        div.on("mouseout",  "dmhint", _mouseoutHint.curry(this));
+        div.on("mouseover", "div.dmhint", _mouseoverHint.curry(this));
+        div.on("mouseout",  "div.dmhint", _mouseoutHint.curry(this));
         
         div = $("overlayhint");
         div.on("mouseover", _mouseoverOverlay.curry(this));
@@ -287,9 +287,13 @@ var DmmapOverlay = (function () {
     __construct.init = function () {
         // get position of the overlay
         var tbody = $$("div.mainmap table.map tbody")[0];
-        var left  = tbody.getClientRects()[0].left + window.pageXOffset;
-        var top   = tbody.getClientRects()[0].top  + window.pageYOffset;
-
+        var left  = tbody.getClientRects()[0].left;
+        var top   = tbody.getClientRects()[0].top;
+        if ("undefined" !== typeof window.pageXOffset) {
+            left += window.pageXOffset;
+            top  += window.pageYOffset;
+        }
+        
         _coords = [ left + 32, top + 32 ];
 
         // position the overlay
@@ -700,8 +704,8 @@ var DmmapTips = (function () {
             ytile = ymax;
         }
 
-        hoverbox.style.top     = (window.pageYOffset + ypos + (ytile * 16) + 16) + "px";
-        hoverbox.style.left    = (window.pageXOffset + xpos + (xtile * 16) + 16) + "px";
+        hoverbox.style.top     = ((typeof window.pageYOffset==="undefined"?0:window.pageYOffset) + ypos + (ytile * 16) + 16) + "px";
+        hoverbox.style.left    = ((typeof window.pageXOffset==="undefined"?0:window.pageXOffset) + xpos + (xtile * 16) + 16) + "px";
         hoverbox.style.display = "block";
         _currentId = tileId;
 
