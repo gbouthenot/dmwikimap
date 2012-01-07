@@ -10,6 +10,16 @@ Even if you already have 4 characters, you may obtain some benefits by raising i
 Some particular fates await the highest ranked members.
 The hidden characters have hidden powers.
 
+WARNING FROM OTHELLO
+(0,255,255)
+From now on, everything you experience and believe in Conflux really means the contrary, deep down inside.
+Yes is no.
+White is black.
+Win is lose.
+A detail contradicts the whole.
+The end is the begining.
+The ultimate meaning is a last-second treason.
+
 ORACLE
 (0,5,9)(0,6,9)(0,7,9)(0,8,9)(0,5,10)(0,6,10)(0,7,10)(0,8,10)(0,6,11)(0,7,11)(0,8,11)(0,5,6)(0,5,7)(0,5,8)(0,6,8)(0,9,10)(0,8,8)(0,6,12)(0,4,9)(0,0,2)(0,3,7)(0,4,4)(0,3,9)(0,3,10)(0,3,11)(0,4,11)(0,4,12)(0,4,13)(0,4,14)(0,4,15)(0,3,13)(0,5,14)(0,3,15)(0,5,15)(0,6,15)(0,7,15)(0,8,15)(0,9,15)(0,3,6)(0,2,6)(0,3,5)(0,8,7)(0,8,6)(0,8,5)(0,8,4)(0,8,3)(0,7,7)(0,7,5)(0,9,3)(0,10,3)(0,11,3)(0,10,4)(0,10,5)(0,10,6)(0,10,7)(0,10,8)(0,0,5)(0,1,5)(0,1,4)(0,1,6)(0,1,3)(0,2,4)(0,4,5)(0,6,13)(0,7,13)(0,8,13)(0,9,13)(0,9,12)(0,10,13)(0,11,13)(0,12,13)(0,13,13)(0,14,13)(0,11,14)(0,12,14)(0,13,14)(0,14,14)(0,13,15)(0,14,15)(0,11,15)(0,14,16)(0,14,12)(0,14,11)(0,14,10)(0,14,9)(0,14,8)(0,3,3)(0,0,3)(0,3,4)(0,10,10)(0,10,11)(0,11,11)(0,12,11)(0,12,10)(0,12,9)(0,11,9)(0,12,8)(0,12,7)(0,13,7)(0,12,6)(0,12,5)(0,5,5)(0,5,4)(0,5,3)(0,6,3)
 See now the words I've woven true,/Wordweaver I am, as I'm known now to you./I speak of great terrors from far below ground,/Within the Undercity, where they do abound.
