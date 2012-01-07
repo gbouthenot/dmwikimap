@@ -20,12 +20,15 @@ var levelDown = function () {
 
 var DmmapZone = (function () {
     "use strict";
-
+    
    /**
     * handler: mouse is on a <dmzone>
     * private static method
     */
     var _mouseover = function (that, event, domevent) {
+        if (null !== DmmapOverlay.getLockElement() ) {
+            return;
+        }
         // get the zone data
         var dmzone = domevent.getAttribute("dmzone");
         dmzone     = eval(dmzone);
@@ -68,7 +71,34 @@ var DmmapZone = (function () {
     * private static method
     */
     var _mouseout = function (that, event, domevent) {
-        DmmapOverlay.hide();
+        if (null !== DmmapOverlay.getLockElement() ) {
+            return;
+        }
+        that.hide();
+    };
+
+
+
+    /**
+     * handler to handle the locking
+     * private static method
+     */
+    var _click = function (that, event, domevent) {
+        if (null !== DmmapOverlay.getLockElement()) {
+            // lock set
+            if (domevent === DmmapOverlay.getLockElement()) {
+                // same element : unlock but don't hide
+                DmmapOverlay.unlock(false);
+            } else {
+                // click on a different element
+                DmmapOverlay.unlock(true);
+                _mouseover(that, event, domevent);
+                DmmapOverlay.lock("zone", domevent);
+            }
+        } else {
+            // lock not set
+            DmmapOverlay.lock("zone", domevent);
+        }
     };
 
 
@@ -91,11 +121,22 @@ var DmmapZone = (function () {
         var divs = $$("div#leveloverview, #sandbox");
         divs.invoke("on", "mouseover", "span.dmzone", _mouseover.curry(this));
         divs.invoke("on", "mouseout",  "span.dmzone", _mouseout.curry(this));
-        
+        divs.invoke("on", "click",     "span.dmzone", _click.curry(this));
+
         var sandbox = $$("#sandbox textarea")[0];
         if ("undefined" !== typeof sandbox ) {
-        	Event.on(sandbox, "keyup", function(a,e){$$("#sandbox .result")[0].innerHTML=e.value.replace("<dmzone ","<span class='dmzone' ").replace(" zone="," dmzone=").replace("</dmzone>","</span>");});
+            Event.on(sandbox, "keyup", function(a,e){$$("#sandbox .result")[0].innerHTML=e.value.replace("<dmzone ","<span class='dmzone' ").replace(" zone="," dmzone=").replace("</dmzone>","</span>");});
         }
+    };
+
+
+
+    /**
+    * hide the zone. Called by _mouseout, _click and by DmmapOverlay
+    * privileged static method
+    */
+    __construct.hide = function () {
+        DmmapOverlay.hide();
     };
 
 
@@ -116,6 +157,10 @@ var DmmapHint = (function () {
     * private static method
     */
     var _mouseoverHint = function (that, event, domevent) {
+        if (null !== DmmapOverlay.getLockElement() ) {
+            return;
+        }
+        
         // get the hint text
         var text = domevent.select(".text")[0].innerHTML;
         
@@ -172,11 +217,20 @@ var DmmapHint = (function () {
 
 
     /**
-     * handler: mouse is on the overlay hint : hide it
+     * handler: mouse is on the overlay hint : hide it so the currently hint mouseout can bubble
+     * if click: unlock and hide the hint
      * private static method
      */
-    var _mouseoverOverlay = function (that, event, domevent) {
-        domevent.hide();
+    var _mouseoverClickOverlay = function (that, event, domevent) {
+        if ("mouseover" === event.type) {
+            if (null !== DmmapOverlay.getLockElement() ) {
+                return;
+            }
+            domevent.hide();
+        } else if ("click" === event.type) {
+            DmmapOverlay.unlock(true);
+            that.hide();
+        }
     };
 
 
@@ -186,13 +240,39 @@ var DmmapHint = (function () {
     * private static method
     */
     var _mouseoutHint = function (that, event, domevent) {
-        var node = $("overlayhint");
-        node.hide();
-        DmmapOverlay.hide();
+        if (null !== DmmapOverlay.getLockElement() ) {
+            return;
+        }
+        that.hide();
     };
 
 
 
+    /**
+     * handler to handle the locking
+     * @todo: factorize with DmmapZone_click into DmmapOverlay
+     * private static method
+     */
+    var _clickHint = function (that, event, domevent) {
+        if (null !== DmmapOverlay.getLockElement()) {
+            // lock set
+            if (domevent === DmmapOverlay.getLockElement()) {
+                // same element : unlock but don't hide
+                DmmapOverlay.unlock(false);
+            } else {
+                // click on a different element
+                DmmapOverlay.unlock(true);
+                _mouseoverHint(that, event, domevent);
+                DmmapOverlay.lock("hint", domevent);
+            }
+        } else {
+            // lock not set
+            DmmapOverlay.lock("hint", domevent);
+        }
+    };
+
+        
+        
    /**
     * the constructor
     * (returned, hosts the priveleged methods)
@@ -212,14 +292,28 @@ var DmmapHint = (function () {
         div = $("levelhints");
         div.on("mouseover", "div.dmhint", _mouseoverHint.curry(this));
         div.on("mouseout",  "div.dmhint", _mouseoutHint.curry(this));
-        
+        div.on("click",     "div.dmhint", _clickHint.curry(this));
+
         div = $("overlayhint");
-        div.on("mouseover", _mouseoverOverlay.curry(this));
+        div.on("mouseover", _mouseoverClickOverlay.curry(this));
+        div.on("click",     _mouseoverClickOverlay.curry(this));
     };
 
 
 
-    return __construct;
+    /**
+     * hide the zone. Called by _mouseout, _click and by DmmapOverlay
+     * privileged static method
+     */
+     __construct.hide = function () {
+         var node = $("overlayhint");
+         node.hide();
+         DmmapOverlay.hide();
+     };
+
+
+
+     return __construct;
 })(); // DmmapHint
 
 
@@ -230,9 +324,11 @@ var DmmapHint = (function () {
 var DmmapOverlay = (function () {
     "use strict";
     // private static variables
-    var _coords = null;     // coordinate of the first <td> cell
-    var _isVisible = null;  // if an overlay is shown
-
+    var _coords    = null;      // coordinate of the first <td> cell
+    var _isVisible = null;      // if an overlay is shown
+    var _lockElement = null;    // the element that the overlay is locked to
+    var _lockType    = null;    // "hint|zone|tip"
+    
    /**
     * render a new tbody with cells
     * @returns domnode <tbody>
@@ -320,10 +416,6 @@ var DmmapOverlay = (function () {
             tab.push(a[1] * window.mapWidth + a[0]);
         });
 
-        if (0 === tab.length) {
-            return;
-        }
-
         this.updateCells(tab, "", "high");
     };
 
@@ -376,6 +468,43 @@ var DmmapOverlay = (function () {
             DmmapOverlay.updateCells([], "", "");
             _isVisible = false;
         }
+    };
+
+
+
+    /**
+     * privileged static method
+     */
+     __construct.lock = function (type, elem) {
+         _lockElement = elem;
+         _lockType    = type;
+     };
+
+
+
+    /**
+     * privileged static method
+     */
+    __construct.unlock = function (fHide) {
+        if (true === fHide) {
+            if ("zone" === _lockType) {
+                DmmapZone.hide();
+            } else if ("hint" === _lockType) {
+                DmmapHint.hide();
+            } else if ("tip" === _lockType) {
+                DmmapTips.hideTip();
+            }
+        }
+        _lockElement = null;
+    };
+
+
+
+    /**
+     * privileged static method
+     */
+    __construct.getLockElement = function () {
+        return _lockElement;
     };
 
 
@@ -662,10 +791,11 @@ var DmmapTips = (function () {
    /**
     * event
     * privileged static method
+    * @return boolean isTip
     */
     __construct.showTip = function (tileId, event, domevent) {
         var hoverbox = $("hover-box-" + tileId);
-        if (null === hoverbox) { return; }
+        if (null === hoverbox) { return false; }
 
         // get coords of the first cell of the overlay
         var overCoord = DmmapOverlay.getCoords();
@@ -704,11 +834,12 @@ var DmmapTips = (function () {
             ytile = ymax;
         }
 
-        hoverbox.style.top     = ((typeof window.pageYOffset==="undefined"?0:window.pageYOffset) + ypos + (ytile * 16) + 16) + "px";
-        hoverbox.style.left    = ((typeof window.pageXOffset==="undefined"?0:window.pageXOffset) + xpos + (xtile * 16) + 16) + "px";
+        hoverbox.style.top     = (ypos + (ytile * 16) + 16) + "px";
+        hoverbox.style.left    = (xpos + (xtile * 16) + 16) + "px";
         hoverbox.style.display = "block";
         _currentId = tileId;
-
+        
+        return true;
     };
 
 
@@ -721,6 +852,7 @@ var DmmapTips = (function () {
         if (null === _currentId) { return; }
         var hoverbox = $("hover-box-" + _currentId);
         hoverbox.style.display = "none";
+        DmmapOverlay.hide();
     };
 
 
@@ -1106,13 +1238,15 @@ var DmmapHandlers = (function () {
 
         var celltype = window.tileIds[tileId];
         if ("view" === _mode) {
-            if ( (3 === celltype) || (4 === celltype) || (5 === celltype) ) {
-                if (_cursor !== "pointer") {
-                    document.body.style.cursor = "pointer";
-                    _cursor = "pointer";
+            if (null === DmmapOverlay.getLockElement() ) {
+                if ( (3 === celltype) || (4 === celltype) || (5 === celltype) ) {
+                    if (_cursor !== "pointer") {
+                        document.body.style.cursor = "pointer";
+                        _cursor = "pointer";
+                    }
                 }
+                DmmapTips.showTip(tileId, event, domevent);
             }
-            DmmapTips.showTip(tileId, event, domevent);
         } else if ("edit" === _mode) {
             if (_drawMode) {
                 if (KeyWatcher.shift) {
@@ -1138,6 +1272,9 @@ var DmmapHandlers = (function () {
     */
     var _mouseout = function (that, event, domevent) {
         if ("view" === _mode) {
+            if (null !== DmmapOverlay.getLockElement() ) {
+                return;
+            }
             if (_cursor !== null) {
                 document.body.style.cursor = null;
                 _cursor = null;
@@ -1152,7 +1289,7 @@ var DmmapHandlers = (function () {
 
 
    /**
-    * event
+    * event. Can end lock mode, but can't start it
     * private static method
     */
     var _click = function (that, event, domevent) {
@@ -1161,7 +1298,28 @@ var DmmapHandlers = (function () {
 
         var celltype = window.tileIds[tileId];
         if ("view" === _mode) {
+            if (null !== DmmapOverlay.getLockElement()) {
+                // lock set: unlock an optionnaly relock.
+                // do not proceed to normal click action (to prevent location change)
+                if (domevent === DmmapOverlay.getLockElement()) {
+                    // same element : unlock but don't hide
+                    DmmapOverlay.unlock(false);
+                } else {
+                    // click on a different element: unlock, and hide, show the tip
+                    DmmapOverlay.unlock(true);
+                    var isTip = DmmapTips.showTip(tileId, event, domevent);
+                    if (isTip) {
+                        DmmapOverlay.lock("tip", domevent);
+                    }
+                }
+                return;
+            }
+            // lock not set
             DmmapTips.click(tileId, event);
+            var isTip = DmmapTips.showTip(tileId, event, domevent);
+            if (isTip) {
+                DmmapOverlay.lock("tip", domevent);
+            }
         } else if ("edit" === _mode) {
             if (KeyWatcher.shift) {
                 _drawMode = 1;

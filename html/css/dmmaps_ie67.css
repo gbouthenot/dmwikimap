@@ -11,3 +11,6 @@ input.submit {
 #overlaymap {
     filter:alpha(opacity=75);
 }
+#overlayhint {
+    filter:alpha(opacity=90);
+}
