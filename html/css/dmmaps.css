@@ -175,6 +175,12 @@ span.dmzone {
     font-size:80%;
 }
 
+#cellinfoctn {
+    text-align:right;
+}
+
+/*
 .handler {
 background:url(handlertest.png);
 }
+*/
