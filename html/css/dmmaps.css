@@ -178,6 +178,10 @@ span.dmzone {
 #cellinfoctn {
     text-align:right;
 }
+div#versions {
+    width:576px;
+    overflow:auto;
+}
 
 /*
 .handler {
