@@ -2,6 +2,7 @@
 
 require_once("Gb/Db.php");
 require_once("Gb/Session.php");
+require_once("ini/dbparams.php");
 
 Class Auth
 {
@@ -19,15 +20,7 @@ Class Auth
     protected function _getDb()
     {
         if ($this->_db===null) {
-            $this->_db=new Gb_Db(
-                array(
-                    "type"=>"Mysql",
-                    "host"=>"localhost",
-                    "user"=>"DBUSER",
-                    "pass"=>"DBPASS",
-                    "name"=>"DBNAME"
-                )
-            );
+            $this->_db=new Gb_Db( iniGetDbparams() );
         }
         return $this->_db;
     }

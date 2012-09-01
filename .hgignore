@@ -1,0 +1,6 @@
+syntax: glob
+
+application/ini/dbparams.php
+.project
+.buildpath
+.settings

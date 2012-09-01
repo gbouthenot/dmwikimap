@@ -1,6 +1,7 @@
 <?php
 
 require_once("Gb/Db.php");
+require_once("ini/dbparams.php");
 
 
 Class Map
@@ -31,16 +32,7 @@ Class Map
     
     protected function _initDb()
     {
-        $this->_db=new Gb_Db(
-            array(
-                "type"=>"Mysql",
-                "host"=>"localhost",
-                "user"=>"DBUSER",
-                "pass"=>"DBPASS",
-                "name"=>"DBNAME",
-                "charset"=>"utf8",
-            )
-        );
+        $this->_db=new Gb_Db( iniGetDbparams() );
     }
     
     protected function _getWikiPage($pagetitle)
