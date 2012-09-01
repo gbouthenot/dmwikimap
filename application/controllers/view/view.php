@@ -1,5 +1,4 @@
 <?php
-
 // parameters supplied by Gb_Mvc:
 // $mvcController
 // $mvcRootUrl

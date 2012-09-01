@@ -1,5 +1,4 @@
 <?php
-
 require_once "Gb/Cache.php";
 
 /*
@@ -189,7 +188,7 @@ Class Hints {
     protected function _parseStage2ProcessCells($sCells) {
         $regexp = '/\\((\\d+,\\d+,\\d+)\\)/';
         $aMatches = null;
-        preg_match_all($regexp, $sCells, &$aMatches);
+        preg_match_all($regexp, $sCells, $aMatches);
         // $aMatches = array(0 => array("(0,1,2)", "(0,4,5)", "(6,7,8)" ),
         //                   1 => array("0,1,2",   "0,4,5",   "6,7,8"   ))
         
