@@ -1,6 +1,7 @@
 syntax: glob
 
 application/ini/dbparams.php
+.htaccess
 .project
 .buildpath
 .settings
