@@ -1,4 +1,4 @@
 RewriteEngine On
 RewriteRule         ^(.*)     html/$1    [last]
 allow from all
-php_value include_path /home/php/includes/zf1/1.12:/home/php/includes/gbphpdb
+#php_value include_path /home/php/includes/zf1/1.12:/home/php/includes/gbphpdb
