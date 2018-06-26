@@ -2,7 +2,7 @@
 
 /**
  * Gb_Ssh2
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -41,11 +41,11 @@ Class Gb_Ssh2
     protected $_port;
     protected $_methods;
     protected $_codepage;
-    
+
     /**
      * Constructeur
      * @param string $user
-     * @param null|string|array $auth null, password or array(pubkeyfile, prvkeyfile[, prvkeypass]) 
+     * @param null|string|array $auth null, password or array(pubkeyfile, prvkeyfile[, prvkeypass])
      * @param string $host
      * @param integer[optional] $port
      * @param string[optinoal] $codepage (default CP850)
@@ -73,9 +73,9 @@ Class Gb_Ssh2
         $this->_auth    = $auth;
         $this->_codepage= $codepage;
     }
-    
+
     protected $_rsc = null;
-    
+
     /**
      * ensure the ssh connection is set, and the server accepted authentication
      * @throws Gb_Exception
@@ -85,19 +85,19 @@ Class Gb_Ssh2
         if (null !== $this->_rsc) {
             return;
         }
-        
+
         $link = ssh2_connect($this->_host, $this->_port, $this->_methods, array(
             "ignore"=>array($this, "_ignore"),
             "debug"=>array($this, "_debug"),
             "macerror"=>array($this, "_macerror"),
             "disconnect"=>array($this, "_disconnect")
         ));
-        
+
         if (false === $link) {
             throw new Gb_Exception("cannot connect to ssh server");
         }
-        
-        
+
+
         $res = null;
         if (is_string($this->_auth)) {
             $res = ssh2_auth_password($link, $this->_user, $this->_auth);
@@ -113,7 +113,7 @@ Class Gb_Ssh2
         } else {
             $res = ssh2_auth_none($link, $this->_user);
         }
-        
+
         if (true === $res) {
             $this->_rsc = $link;
         } else {
@@ -126,45 +126,61 @@ Class Gb_Ssh2
             throw new Gb_Exception($msg);
         }
     }
-    
-    
+
+
     // callbacks
     protected function _ignore($message) { echo "IGN ".$message.PHP_EOL; }
     protected function _debug($message, $language, $aways_display) { echo "DBG ".$message.PHP_EOL;}
     protected function _macerror($packet) { }
     protected function _disconnect($reason, $message, $language) { echo "DIS ".$reason." ".$message.PHP_EOL;}
-    
-    
-    
-    public function exec($string)
+
+
+    /**
+     * Send commands to ssh host
+     * @param string|array $commands
+     * @param string[optional] $chain  string to use to join commands before sending. "&&" (default). "|" for piping, etc...
+     * @return stdClass
+     */
+    public function exec($commands, $chain = "&&")
     {
-        //$string64 = base64_encode( mb_convert_encoding($string, $this->_codepage, "UTF-8"));
-        $string64 = base64_encode($string);
-        $res = $this->execRaw("set -f +B && `echo $string64 | base64 -d`");
-//        $res = $this->execRaw("set -f +B && echo $string64 | base64 -d");
-//        Gb_Log::logNotice($string64, strlen($string64));
-        
-        $res->exec = $string;
+        if (null === $chain) {
+            $chain = "&&";
+        }
+
+        $chain = " $chain ";
+
+        if (!is_array($commands)) {
+            $commands = array($commands);
+        }
+
+        $commands = array_map( function($cmd){ return base64_encode($cmd); }, $commands);       // array("ZHNxdWVyeSB1c2VyIC1zYW1pZCB0ZXN0Z2I=", "ZHNtb2QgdXNlciAtcHdkICJzdGFnZTUi")
+        $commands = array_map( function($cmd){ return "`echo $cmd | base64 -d`"; }, $commands); // array("`echo ZHNxdWVyeSB1c2VyIC1zYW1pZCB0ZXN0Z2I= | base64 -d`", "`echo ZHNtb2QgdXNlciAtcHdkICJzdGFnZTUi | base64 -d`")
+
+        $stringArmoured = "set -f +B && " . implode($chain, $commands);                         // set -f +B && `echo ZHNxdWVyeSB1c2VyIC1zYW1pZCB0ZXN0Z2I= | base64 -d` ${chain} `echo ZHNtb2QgdXNlciAtcHdkICJzdGFnZTUi | base64 -d`
+
+        $res = $this->execRaw( $stringArmoured );
+
+        $res->exec = $stringArmoured;
         return $res;
     }
 
     public function execRaw($cmd)
     {
         $this->connect();
-        
+
         $stdio = ssh2_exec($this->_rsc, $cmd);
 
         stream_set_blocking($stdio, true);
-        
+
         $stdout = stream_get_contents($stdio);
         $stderr = stream_get_contents(ssh2_fetch_stream($stdio, SSH2_STREAM_STDERR));
         fclose($stdio);
-        
+
         $out = mb_convert_encoding($stdout, "UTF-8", $this->_codepage);
         $err = mb_convert_encoding($stderr, "UTF-8", $this->_codepage);
-        
+
         echo PHP_EOL;
-        
+
         $ret = new stdClass();
         $ret->stdout     = $stdout;
         $ret->stdoutUtf8 = $out;
@@ -173,5 +189,5 @@ Class Gb_Ssh2
         $ret->execRaw    = $cmd;
         return $ret;
     }
-    
+
 }

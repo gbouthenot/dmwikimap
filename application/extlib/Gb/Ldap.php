@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Ldap
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -18,14 +18,11 @@ require_once(_GB_PATH."Exception.php");
 
 class Gb_Ldap
 {
-    protected static $_connexion;
-    
-    protected static $_params;
-    
-    protected static $_shutdownRegistred;
+    protected $connexion;
+    protected $params;
 
     /**
-     * Renvoie la revision de la classe ou un boolean si la version est plus petite que pr�cis�e, ou Gb_Exception
+     * Renvoie la revision de la classe ou un boolean si la version est plus petite que précisée, ou Gb_Exception
      *
      * @return boolean|integer
      * @throws Gb_Exception
@@ -39,77 +36,50 @@ class Gb_Ldap
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-    
-    
-    function __construct($server, $dn=null, $pass=null, $port=null)
+
+
+    public function __construct($server, $dn = null, $pass = null, $port = null)
     {
-        $par=self::$_params;
-        if ( self::$_connexion === null || $server!=$par[0] || $dn!=$par[1] ) {
-            // serveur non connecté ou paramètres différents
-            $this->_shutdown();
-            $this->_connect($server, $port);
+        if ($port===null) {
+            $port=389;
         }
-        if ( $pass!=$par[2] || $port!=$par[3] ) {
-            $this->_bind($dn, $pass);
-        }
-        
-        self::$_params=array($server, $dn, $pass, $port);
-        
-        if (self::$_shutdownRegistred !== true) {
-            register_shutdown_function(array($this, "_shutdown"));
-            self::$_shutdownRegistred = true;
-        }
+        $this->params = array(
+            "server" => $server,
+            "dn" => $dn,
+            "pass" => $pass,
+            "port" => $port
+        );
+        $this->connexion = null;
     }
 
-    
-    
-    
-    public function searchtest()
+
+
+
+    /**
+     * @return false|array false if error, array() if no result
+     */
+    public function search($basedn, $filter = null, $attrs = null, $sizelimit = null)
     {
-        
-        $ds=self::$_connexion;
-        echo "Searching for (sn=S*) ...\n";
-        // Search surname entry
-        $sr=ldap_search($ds, "dc=univ-fcomte,dc=fr", "uid=gbouthen");  
-        echo "Search result is " . $sr . "<br />";
-    
-        echo "Number of entires returned is " . ldap_count_entries($ds, $sr) . "<br />";
-    
-        echo "Getting entries ...<p>";
-        $info = ldap_get_entries($ds, $sr);
-        echo "Data for " . $info["count"] . " items returned:<p>";
-    
-        for ($i=0; $i<$info["count"]; $i++) {
-            echo "dn is: " . $info[$i]["dn"] . "<br />";
-            echo "first cn entry is: " . $info[$i]["cn"][0] . "<br />";
-            echo "first email entry is: " . $info[$i]["mail"][0] . "<br /><hr />";
-        }
-    }    
-    
-    
-    
-    
-    
-    
-    public function search($basedn, $filter=null, $attrs=null, $sizelimit=null)
-    {
+        $this->connect();
+
         if ($attrs===null) {
             $attrs=array();
         }
-        $sr=@ldap_search(self::$_connexion, $basedn, $filter, $attrs, false, $sizelimit, 10);
-        
+        $sr=@ldap_search($this->connexion, $basedn, $filter, $attrs, false, $sizelimit, 10);
+
         if ($sr === false) {
             return false;
         }
-        
 
         $users=array();
-        
-        for ($entry = ldap_first_entry(self::$_connexion, $sr); $entry!=false; $entry = ldap_next_entry(self::$_connexion, $entry)) {
+
+        for ($entry = ldap_first_entry($this->connexion, $sr);
+            $entry != false;
+            $entry = ldap_next_entry($this->connexion, $entry)) {
             $user = array();//print_r($entry);echo "  -  ".memory_get_peak_usage()."\n";
-            $attributes = ldap_get_attributes(self::$_connexion, $entry);
-            
-            for($i=$attributes['count']; $i-- >0; ) {
+            $attributes = ldap_get_attributes($this->connexion, $entry);
+
+            for ($i=$attributes['count']; $i-- >0;) {
                 if ($attributes[$attributes[$i]]["count"] == 1) {
                     $user[$attributes[$i]] = $attributes[$attributes[$i]][0];
                 } else {
@@ -119,13 +89,13 @@ class Gb_Ldap
             }
             $users[] = $user;
         }
-        
+
         ldap_free_result($sr);
-        
+
         return $users;
     }
-    
-    
+
+
     // récupère le premier élément qui n'est pas un array
     // si l'attribut n'est pas définit dans $array, renvoie null
     public static function getFirst(array $array, $attribute)
@@ -133,66 +103,59 @@ class Gb_Ldap
         if (!isset($array[$attribute])) {
             return null;
         } else {
-            return self::_getFirst1($array[$attribute]);
+            return self::getFirst1($array[$attribute]);
         }
     }
 
-    protected static function _getFirst1($value)
+    protected static function getFirst1($value)
     {
         if (is_array($value)) {
-            return self::_getFirst1($value[0]);
+            return self::getFirst1($value[0]);
         } else {
             return $value;
         }
     }
-   
-    
-    /**
-     * Ne fait rien du tout, puisque les paramètres sont statiques, la connexion reste ouverte
-     */
-    function __destruct()
+
+
+    public function __destruct()
     {
-    }
-    
-    function _shutdown()
-    {
-        if (self::$_connexion !== null ) {
-            ldap_close(self::$_connexion);
-            self::$_connexion = self::$_params = null;
+        if ($this->connexion !== null) {
+            ldap_close($this->connexion);
         }
     }
-    
-   
+
     /**
      * Connexion au serveur
      * @throws Exception
      */
-    protected function _connect($server, $port=null)
+    protected function connect()
     {
-        if ($port===null) {
-            $port=389;
+        if ($this->connexion === null) {
+            $server = $this->params["server"];
+            $port = $this->params["port"];
+
+            $connexion= @ldap_connect($server, $port);
+            if ($connexion === false) {
+                throw new Gb_Exception("Cannot connect to ldap server");
+            }
+
+            $this->connexion = $connexion;
+            $this->bind();
         }
-        
-        $connexion= ldap_connect($server, $port);
-        if ($connexion === FALSE) {
-            throw new Gb_Exception("Cannot connect to $server, port $port, errno=".ldap_errno($connexion).", errmsg=".ldap_error($connexion));
-        }
-        
-        self::$_connexion = $connexion;
     }
-    
-    
-    protected function _bind($dn=null, $pass=null)
+
+
+    protected function bind()
     {
+        $dn = $this->params["dn"];
+        $pass = $this->params["pass"];
         if ($dn !== null) {
-            $res = ldap_bind(self::$_connexion, $dn, $pass);
+            $res = @ldap_bind($this->connexion, $dn, $pass);
         } else {
-            $res = ldap_bind(self::$_connexion);
+            $res = @ldap_bind($this->connexion);
         }
-        if (!$res) {
-            throw new Gb_Exception("Cannot bind, errno=".ldap_errno($res).", errmsg=".ldap_error($res));
+        if ($res !== true) {
+            throw new Gb_Exception("Cannot bind to ldap server");
         }
     }
-    
-    
 }

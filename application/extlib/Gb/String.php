@@ -125,7 +125,7 @@ class Gb_String
      */
     public static function mystrtoupper($s)
     {
-        return strtoupper(self::removeAccents($s));
+        return strtoupper(self::removeLatin2(self::removeAccents($s)));
     }
 
     /**
@@ -154,7 +154,6 @@ class Gb_String
         // htmlentities it
         $s = htmlentities($s, ENT_NOQUOTES, "UTF-8");
 
-
         $s = preg_replace('#&([A-za-z])(?:acute|cedil|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $s);
         $s = str_replace("&euro;", "EUR", $s);
         $s = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $s); // pour les ligatures e.g. '&oelig;'
@@ -168,6 +167,85 @@ class Gb_String
 
         return $s;
     }
+
+
+    /**
+     * Return a new string made of unique chars
+     * @param string $str
+     * @return string
+     */
+    public static function uniqueChars($str) {
+        $unique = "";
+        for ($i = 0, $size = mb_strlen($str); $i < $size; $i++) {
+            $char = mb_substr($str, $i, 1);
+            if (mb_strpos($unique, $char) === false) {
+                $unique .= $char;
+            }
+        }
+        return $unique;
+    }
+
+    /**
+     * substitute polish character
+     * @param string $str to translate
+     * @return string
+     */
+    public static function removeLatin2($str)
+    {
+        $from = $to = "";
+
+        // Latin Extended-A unicode subset: https://www.utf8icons.com/subsets/latin-extended-a
+        // $(".character-links").text().replace(/\ /g,"")
+        $from .= "ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĴĵĶķĸĹĺĻļĽľĿŀŁł";
+        $to   .= "AaAaAaCcCcCcCcDdDdEeEeEeEeEeGgGgGgGgHhHhIiIiIiIiIiJjKkkLlLlLlLlLl";
+        $from .= "ŃńŅņŇňŉŊŋŌōŎŏŐőŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſ";
+        $to   .= "NnNnNnnNnOoOoOoRrRrRrSsSsSsSsTtTtTtUuUuUuUuUuUuWwYyYZzZzZzf";
+
+        // Latin Extended-B unicode subset: https://www.utf8icons.com/subsets/latin-extended-b
+        $from .= "ƀƁƂƃƄƅƆƇƈƉƊƋƌƍƎƏƐƑƒƓƔƕƖƗƘƙƚƛƜƝƞƟƠơƢƣƤƥƦƧƨƩƪƫƬƭƮƯưƱƲƳƴƵƶƷƸƹƺƻƼƽƾƿǀǃ";
+        $to   .= "bBbbbbCCcDDddqEEEFFGYhllKKlYWNnOOoOoPBRSsEltTfTUuOOYyZz33zz255?P|!";
+        $from .= "ǍǎǏǐǑǒǓǔǕǖǗǘǙǚǛǜǝǞǟǠǡǤǥǦǧǨǩǪǫǬǭǮǯǰǴǵǷǸǹ";
+        $to   .= "AaIiOoUuUuUuUuUueAaAaGgGgKkQqQq33jGgPNn";
+        $from .= "ǺǻǾǿȀȁȂȃȄȅȆȇȈȉȊȋȌȍȎȏȐȑȒȓȔȕȖȗȘșȚțȜȝȞȟȠȡȢȣȤȥȦȧȨȩȪȫȬȭȮȯȰȱȲȳȴȵȶȷ";
+        $to   .= "Aa00AaAaEeEeliliOoOoRrRrUuUuSsTt33Hhnd88ZzAaEeOoOoOoOoYylntj";
+        $from .= "ȺȻȼȽȾȿɀɁɂɃɄɅɆɇɈɉɊɋɌɍɎɏ";
+        $to   .= "ACcLTsz??BUAEeJjQqRrYy";
+
+        // Autres dans https://en.wikipedia.org/wiki/ISO/IEC_8859-2
+        $from .= "óÓ˘˛ˇÍÎÝý˙";
+        $to   .= "oO^,^IIYy`";
+        $from .= '˝';
+        $to   .= '"';
+
+        // keep only unique chars:
+        //die("unique: " . self::uniqueChars($from));
+
+        $str = self::mb_strtr($str, $from, $to);
+
+        $multi1 = array("Ĳ", "ĳ", "Œ", "œ", "ǁ", "ǂ", "Ǉ", "ǈ", "ǉ", "Ǌ", "ǋ", "ǌ",
+            "Ǣ", "ǣ", "Ƕ", "Ǆ", "ǅ", "ǆ", "Ǳ", "ǲ", "ǳ", "Ǽ", "ǽ", "ȸ", "ȹ");
+        $multi2 = array("IJ", "ij", "OE", "oe","||", "|=", "LJ", "Lj", "lj", "NJ", "Nj", "nj",
+            "AE", "ae", "Hu", "DZ", "Dz", "dz", "DZ", "Dz", "dz", "AE", "ae", "db", "qp");
+
+        $str = str_replace($multi1, $multi2, $str);
+
+        return $str;
+    }
+
+    /**
+     * Multi byte strtr
+     * @param string $str to translate
+     * @param string $from
+     * @param string $to
+     * @return string
+     */
+    public static function mb_strtr($str, $from, $to)
+    {
+        // source: http://stackoverflow.com/questions/2758736/multibyte-strtr-mb-strtr @AlixAxel
+        return str_replace(preg_split('~~u', $from, null, PREG_SPLIT_NO_EMPTY),
+            preg_split('~~u', $to, null, PREG_SPLIT_NO_EMPTY), $str);
+    }
+
 
 
   /**
@@ -275,14 +353,18 @@ class Gb_String
      * Transform an array into CSV format. Replace newlines by " - ".
      * Decodes UTF8 unless $fRawMode is set.
      *
-     * @param array   $data        array(array("field"=>$value, ...), ...)
-     * @param boolean $fEnableUtf8 set to true for sending UTF8 (default:false:do utf8_decode)
+     * @param array             $data        array(array("field"=>$value, ...), ...)
+     * @param boolean[optional] $fEnableUtf8 set to true for sending UTF8 (default:false:do utf8_decode)
+     * @param string[optional]  $arrayMode   "FIRST" (default) or a string used to implode array
      * @return string
      */
-    public static function arrayToCsv(array $data, $fEnableUtf8=null)
+    public static function arrayToCsv(array $data, $fEnableUtf8=null, $arrayMode=null)
     {
         if (count($data)==0) {
             return "";
+        }
+        if (null === $arrayMode) {
+            $arrayMode = "FIRST";
         }
         $ret="";
 
@@ -298,7 +380,7 @@ class Gb_String
 
         foreach($data as $ligne) {
             foreach(array_keys($firstligne) as $ind) {
-                $col = $ligne[$ind];
+                $col = self::splat($ligne[$ind], $arrayMode);
                 $col = str_replace('"',    '""',   $col);
                 $col = str_replace("\r",   "\n",   $col);
                 $col = str_replace("\n\n", "\n",   $col);
@@ -364,21 +446,42 @@ class Gb_String
     }
 
     /**
+     * Used by ArrayToCsv and formatTable
+     * @param mixed $col
+     * @param string $arrayMode
+     * @return string
+     */
+    protected static function splat($col, $arrayMode) {
+        if (is_array($col)) {
+            if ("FIRST" === $arrayMode) {
+                $ind2 = array_keys($col);
+                $col = (isset($ind2[0])) ? ($col[$ind2[0]]) : "";
+            } else {
+                $col = implode($arrayMode, $col);
+            }
+        }
+
+        return $col;
+    }
+
+    /**
      * Format an array
      *
      * @param array $array
      * @param string $format[optional] text(default)|html|csv
      * @param integer[optional] maxColLen default:40, 0 for no limit
      * @param string[optional] string to use for padding (default " ", set to "" for no padding)
+     * @param string[optional]  $arrayMode   "FIRST" (default) or a string used to implode array cols
+     * @param array[optional]  $cols   array of column headers
      * @return string
      */
-    public static function formatTable(array $array, $format=null, $maxColLen=null, $pad=null)
+    public static function formatTable(array $array, $format=null, $maxColLen=null, $pad=null, $arrayMode=null, $cols=null)
     {
         if (null === $format) { $format = "text"; }
         $format=strtolower($format);
 
         if ('csv' === $format) {
-            return self::arrayToCsv($array);
+            return self::arrayToCsv($array, null, $arrayMode);
         }
 
         $ret="";
@@ -390,6 +493,9 @@ class Gb_String
         }
         if (null === $pad) {
             $pad = " ";
+        }
+        if (null === $arrayMode) {
+            $arrayMode = "FIRST";
         }
 
         // should we also display the key index ?
@@ -405,7 +511,11 @@ class Gb_String
             // COMPUTE WIDTHS
             //
             reset($array);
-            $firstrowkeys=array_keys(current($array));
+            if (null === $cols) {
+                $firstrowkeys=array_keys(current($array));
+            } else {
+                $firstrowkeys=$cols;
+            }
 
             // get the max length of each column
             $max=array();
@@ -422,7 +532,11 @@ class Gb_String
             foreach ($array as $indexname=>$line) {
                 $max["index"]=max($max["index"], mb_strlen($indexname, "UTF-8"));
                 foreach ($firstrowkeys as $number=>$keyname) {
-                    $max[$number]=max($max[$number], mb_strlen(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $line[$keyname]), "UTF-8"));
+                    if ($cols) {
+                        $keyname = $number;
+                    }
+                    $col = self::splat($line[$keyname], $arrayMode);
+                    $max[$number]=max($max[$number], mb_strlen(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $col), "UTF-8"));
                     if ($maxColLen) {
                         $max[$number] = min($max[$number], $maxColLen);
                     }
@@ -465,8 +579,13 @@ class Gb_String
                     $ret.="|".$pad.self::mb_str_pad(mb_substr($indexname, 0, $len, "UTF-8"), $indexlen, " ", STR_PAD_LEFT, "UTF-8").$pad;
                 }
                 foreach ($firstrowkeys as $number=>$keyname) {
+                    if ($cols) {
+                        $keyname = $number;
+                    }
                     $len=$max[$number];
-                    $ret.="|".$pad.self::mb_str_pad(mb_substr(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $line[$keyname]), 0, $len, "UTF-8"), $len, " ", STR_PAD_LEFT).$pad;
+                    $col = self::splat($line[$keyname], $arrayMode);
+
+                    $ret.="|".$pad.self::mb_str_pad(mb_substr(str_replace(array("\r","\n","\0"), array("\\r", "\\n", "\\0"), $col), 0, $len, "UTF-8"), $len, " ", STR_PAD_LEFT).$pad;
                 }
                 $ret.="|\n";
             }
@@ -474,7 +593,6 @@ class Gb_String
         } elseif ($format=="html") {
             reset($array);
             $firstrowkeys=array_keys(current($array));
-
             //
             // OUTPUT FIRST ROW
             //
@@ -483,6 +601,10 @@ class Gb_String
                 $rowhead .= "<th>index</th>";
             }
             foreach ($firstrowkeys as $number=>$keyname) {
+                if ($cols) {
+                    $keyname = $number;
+                }
+
                 $rowhead .= "<th>$keyname</th>";
             }
             $rowhead .= "</tr></thead>";
@@ -497,7 +619,10 @@ class Gb_String
                     $tbody .= "<td>$indexname</td>\n";
                 }
                 foreach ($firstrowkeys as $number=>$keyname) {
-                    $val = htmlspecialchars($line[$keyname]);
+                    if ($cols) {
+                        $keyname = $number;
+                    }
+                    $val = htmlspecialchars(self::splat($line[$keyname], $arrayMode));
                     $tbody .= "<td>$val</td>";;
                 }
                 $tbody .= "</tr>\n";
@@ -589,6 +714,27 @@ class Gb_String
     public static function mb_str_pad($input, $pad_length, $pad_string=' ', $pad_type=STR_PAD_RIGHT, $charset="UTF-8") {
         $diff = strlen($input) - mb_strlen($input, $charset);
         return str_pad($input, $pad_length+$diff, $pad_string, $pad_type);
+    }
+
+    /**
+     * Friendler (more tolerant) json_decode
+     * Handles spaces, not-quoted object index and comments
+     * usage same as the official json_decode
+     */
+    public static function json_decode(/* $json, $assoc=false, $depth=512, $options=0 */)
+    {
+        $p = func_get_args();
+        // from: 1franck
+        // Sometime, i need to allow comments in json file. So i wrote a small func to clean comments in a json string before decoding it:
+        // (replaced double quotes by single quotes)
+        $p[0] = preg_replace('#(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|([\s\t](//).*)#', '', $p[0]);
+
+        // from: phpdoc at badassawesome dot com:
+        // I added a 3rd regex to the json_decode_nice function by "colin.mollenhour.com" to handle a trailing comma in json definition.
+        $p[0] = str_replace(array("\n","\r"),"", $p[0]);
+        $p[0] = preg_replace('/([{,]+)(\s*)([^"]+?)\s*:/','$1"$3":', $p[0]);
+        $p[0] = preg_replace('/(,)\s*}$/','}', $p[0]);
+        return call_user_func_array('\json_decode', $p);
     }
 
 }

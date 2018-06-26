@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Elem_Text_Abstract
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -19,17 +19,21 @@ require_once(_GB_PATH."Form/Elem/Abstract.php");
 
 abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
 {
-    
-    
-    
+
+
+
     public function getInput($value, $inInput, $inputJs)
     {
         $sValue=htmlspecialchars($value);
         $htmlInInput=$this->getHtmlInInput();
         $elemid=$this->elemId();
-        return "<input $htmlInInput id='{$elemid}' name='{$elemid}' value='$sValue' $inInput $inputJs />";
+        $required = ($this->fMandatory()) ? ("required='required'") : "";
+        $pattern = (strlen($this->regexp())) ? ('pattern="' . $this->_getStrippedRegexp() . '"') : "";
+        $placeholder = (strlen($this->placeholder())) ? ('placeholder="' . $this->placeholder() . '"') : "";
+        $title = (strlen($this->title())) ? ('title="' . $this->title() . '"') : "";
+        return "<input $htmlInInput id='{$elemid}' name='{$elemid}' value='$sValue' $required $pattern $placeholder $title $inInput $inputJs />";
     }
-    
+
     abstract protected function getHtmlInInput();
 
 
@@ -38,19 +42,20 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
         $js = null;
         $ret="";
         $elemid=$this->elemId();
-        
+        $classContainer = $this->classContainer();
+
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
+        $ret .= "gbSetClass('{$elemid}_div', 'OK $classContainer');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
-        
+
         $ret.="var value=remove_accents(gbtrim(\$F('{$elemid}')));\n";
 
         // traitement fMandatory
         if ($this->fMandatory()) {
           $ret.="if (value=='') {\n";
-          $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+          $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
           $ret.="}\n";
         }
 
@@ -63,17 +68,17 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
             }
             $ret.="var regexp=$regexp\n";
             $ret.="if (!regexp.test(value)) {\n";
-            $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+            $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
             $ret.="}\n";
         }
-        
+
         $ret.=$this->_maxminvalueJS($this->minValue(), "<",  true,  $regexp);    // traitement minvalue
         $ret.=$this->_maxminvalueJS($this->maxValue(), ">",  true,  $regexp);    // traitement maxvalue
         $ret.=$this->_maxminvalueJS($this->notValue(), "==", false, $regexp);    // traitement notvalue
-        
+
         if (!$this->fMandatory()) {
           $ret.="if (value=='') {\n";
-          $ret.=" gbSetClass('{$elemid}_div', 'OK');\n";
+          $ret.=" gbSetClass('{$elemid}_div', 'OK $classContainer');\n";
           $ret.="}\n";
         }
 
@@ -86,21 +91,22 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
         $elemid=$this->elemId();
         return "onchange='javascript:validate_{$elemid}();' onkeyup='javascript:validate_{$elemid}();'";
     }
-    
-    
+
+
     public function __construct($name, array $aParams=array())
     {
         $availableParams=array("minValue", "maxValue", "regexp", "notValue");
         $aParams=array_merge(array("errorMsgMissing"=>"Champ non rempli"), $aParams);
         return parent::__construct($name, $availableParams, $aParams);
     }
-    
-    
+
+
     private function _maxminvalueJS($aValues, $operator, $fEval, $regexp)
     {
         $ret="";
         $elemid=$this->elemId();
-        
+        $classContainer = $this->classContainer();
+
         // traitement minvalue/maxvalue
         if (count($aValues)) {
             foreach ($aValues as $borne) {
@@ -123,13 +129,13 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
                     $ret.=" var borne={$borne};\n";
                 }
                 $ret.=" if (bornevalue $operator borne) {";
-                $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+                $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
                 $ret.="}\n";
             }
         }
         return $ret;
     }
-    
+
 
 
 
@@ -168,6 +174,7 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
         $fMandatory=$this->fMandatory();
 
         if (strlen($value) && strlen($regexp)) {
+            //Gb_Log::logDebug("regexp validate val=$value, regexp=$regexp");
             if (!preg_match($regexp, $value)) {
                 return "Valeur incorrecte";
             }
@@ -238,8 +245,6 @@ abstract class Gb_Form_Elem_Text_Abstract extends Gb_Form_Elem_Abstract
         }
         return "";
     }
-    
-
 
 
 

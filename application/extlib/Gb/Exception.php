@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Exception
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -36,21 +36,24 @@ class Gb_Exception extends Exception
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-        
+
     public function __toString()
     {
-        $message=__CLASS__ . ": \n";
+        $message = __CLASS__ . ": " . $this->getMessage() . "\n";
         $trace=$this->getTrace();
-        if (isset($trace[0])) {
-            $file=$trace[0]["file"];
-            $line=$trace[0]["line"];
-            $function=$trace[0]["function"];
-            $message.="Erreur dans $function(...): ".$this->getMessage()."\n";
-            $message.="thrown in $file on line $line\n";
-        } else {
-            $message.=$this->getMessage();
+
+        $t = array("file"=>$this->file, "line"=>$this->line);
+
+        for ($level = 0; $level < count($trace); $level++) {
+            $file = $line = $function = "?";
+            if (isset($t["file"]))     { $file=$t["file"]; }
+            if (isset($t["line"]))     { $line=$t["line"]; }
+            if (isset($trace[$level+0]["function"])) { $function=$trace[$level+0]["function"]; }
+            $message .= "  $function(...) $file:$line\n";
+            $t = $trace[$level];
         }
-        return $message;
+
+            return $message;
     }
 }
 

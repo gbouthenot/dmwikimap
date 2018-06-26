@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Form_Elem_Selectmultiple
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -19,16 +19,19 @@ require_once(_GB_PATH."Form/Elem/Abstract.php");
 class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
 {
     protected $_args;
-    
-    
+
+
     public function getInput($value, $inInput, $inputJs)
     {
         $value;
         $aValues=$this->args();
         $value=$this->rawvalue();
         $elemid=$this->elemId();
+        $classInput=$this->classInput();
+        $required = ($this->fMandatory()) ? ("required='required'") : "";
+        $title = (strlen($this->title())) ? ('title="' . $this->title() . '"') : "";
         $ret="";
-        $ret.="<select multiple='multiple' id='{$elemid}' name='{$elemid}[]' class='multiple' $inInput $inputJs>\n";
+        $ret.="<select multiple='multiple' id='{$elemid}' name='{$elemid}[]' class='multiple $classInput' $required $title $inInput $inputJs>\n";
         $fOptgroup=false;
         foreach ($aValues as $ordre=>$aOption){
           $sVal=htmlspecialchars(is_array($aOption)?$aOption[0]:$aOption, ENT_QUOTES);
@@ -41,8 +44,9 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
               $fOptgroup=true;
           } else {
               $sSelected="";
-              if (in_array($ordre, $value))
-                $sSelected="selected='selected'";
+              if (in_array($ordre, $value)) {
+                  $sSelected="selected='selected'";
+              }
               $ret.="<option value='$ordre' $sSelected>$sLib</option>\n";
           }
         }
@@ -52,17 +56,17 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         $ret.="</select>\n";
         return $ret;
     }
-    
 
-    
+
+
     public function __construct($name, array $aParams=array())
     {
         $availableParams=array("args");
         $aParams=array_merge(array("errorMsgMissing"=>"Veuillez faire un choix", "value"=>array()), $aParams);
         return parent::__construct($name, $availableParams, $aParams);
     }
-    
-    
+
+
 
     protected function getInputJavascript()
     {
@@ -74,19 +78,20 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         $js = null;
         $ret="";
         $elemid=$this->elemId();
-        
+        $classContainer = $this->classContainer();
+
         // par défaut, met en classOK, si erreur, repasse en classNOK
-        $ret .= "gbSetClass('{$elemid}_div', 'OK');\n";
+        $ret .= "gbSetClass('{$elemid}_div', 'OK $classContainer');\n";
 
         // enlève le message d'erreur
         $ret .= "gbRemoveError('{$elemid}');\n";
-                
+
         $ret .= "var value=\$F('{$elemid}');\n";
-        
+
         // traitement fMandatory
         if ($this->fMandatory()) {
             $ret.="if (value.length==0) {";
-            $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+            $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
             $ret.="}\n";
         }
 
@@ -105,7 +110,7 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
                    $ret.=" var notvalue=\"".addslashes($notValue)."\";\n";
                  }
                  $ret.=" if (bornevalue == notvalue) {";
-                 $ret.=" gbSetClass('{$elemid}_div', 'NOK');\n";
+                 $ret.=" gbSetClass('{$elemid}_div', 'NOK $classContainer');\n";
                  $ret.="}\n";
             }
         }
@@ -113,7 +118,7 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         $ret2=parent::_renderJavascript($ret);
         return $ret2;
     }
-    
+
 
 
 
@@ -135,11 +140,11 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
             return $this->errorMsgMissing();
         }
 
-        
+
         // valeur transmise n'est pas dans la liste
         foreach($values as $value) {
             $found=0;
-            foreach ($args as $val) { 
+            foreach ($args as $val) {
                 $thisval=is_array($val)?$val[0]:$val;
                 if ($value===$thisval) {
                     $found=1;
@@ -148,9 +153,9 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
             }
             if (!$found) {
                 return "Choix invalide";
-            }                
+            }
         }
-        
+
         $value=$values;
         $validateFunc=$this->validateFunc();
         if (strlen($validateFunc)  && strlen($value)) {
@@ -173,7 +178,7 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         return true;
     }
 
-    
+
 
 
 
@@ -184,28 +189,28 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
     /**
      * get/set args
      * @param array[optional] $text
-     * @return Gb_Form_Elem_Selectmultiple|String 
+     * @return Gb_Form_Elem_Selectmultiple|String
      */
     public function args(array $text=null)
-    {   
+    {
         if ($text===null) {         return $this->_args; }
         else { $this->_args=$text; return $this;}
     }
-    
 
-    
-    
+
+
+
     /**
      * get/set value
      * @param array[optional] $text
-     * @return Gb_Form_Elem_Selectmultiple|String 
+     * @return Gb_Form_Elem_Selectmultiple|String
      */
     public function value($text=null)
-    {   
+    {
         $args=$this->args();
         $vals=array();
         if ($text===null) {
-            foreach($this->rawValue() as $value) { 
+            foreach($this->rawValue() as $value) {
                 if (isset($args[$value])) {
                     $value=$args[$value];
                     if (is_array($value)) { $value=$value[0]; }
@@ -235,6 +240,6 @@ class Gb_Form_Elem_Selectmultiple extends Gb_Form_Elem_Abstract
         }
         return $ret;
     }
-    
+
 
 }

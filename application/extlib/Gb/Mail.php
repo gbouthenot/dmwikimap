@@ -1,7 +1,7 @@
 <?php
 /**
  * Gb_Mail
- * 
+ *
  * @author Gilles Bouthenot
  * @version $Revision$
  * @Id $Id$
@@ -34,7 +34,7 @@ class Gb_Mail
         if ($throw) { throw new Gb_Exception(__CLASS__." r".$revision."<r".$mini); }
         return false;
     }
-        
+
     /**
      * Envoie un mail en utilisant le smtp local
      *
@@ -44,18 +44,18 @@ class Gb_Mail
      * @param string $from
      * @param string|array[optional] $bcc destinataires, séparés par virgule
      * @param string|array[optional] $cc destinataires, séparés par virgule
-     * @param string[optional] $charset charset
-     * @param string[optional] $bodyhtml charset
-     * 
+     * @param string[optional] $charset
+     * @param string[optional] $bodyhtml
+     *
      * @return boolean
      */
     public static function mymail($to, $sujet, $bodytext, $from, $bcc=array(), $cc=array(), $charset='UTF-8', $bodyhtml=null)
     {
         require_once 'Zend/Mail.php';
         require_once 'Zend/Mail/Transport/Smtp.php';
-        
+
         $transport=new Zend_Mail_Transport_Smtp("127.0.0.1");
-        
+
         if (is_string($to)) {
             $to=explode(",", $to);
         }
@@ -68,14 +68,14 @@ class Gb_Mail
 
         $from=str_ireplace("From: ", "", $from);
 
-        $mail=new Zend_Mail();
+        $mail=new Zend_Mail($charset);
 
         foreach ($to as $t) {
             if (strlen($t)) {
                 $mail->AddTo($t);
             }
         }
-    
+
         foreach ($cc as $t) {
             if (strlen($t)) {
                 $mail->addCc($t);
@@ -87,13 +87,13 @@ class Gb_Mail
                 $mail->addBcc($t);
             }
         }
-    
+
         $mail->setFrom($from, substr($from, 0, strpos($from, "@")));
         if (strlen($bodytext)) {
-            $mail->setBodyText($bodytext, $charset);
+            $mail->setBodyText($bodytext);
         }
         if (strlen($bodyhtml)) {
-            $mail->setBodyHtml($bodyhtml, $charset);
+            $mail->setBodyHtml($bodyhtml);
         }
 
         $mail->setSubject($sujet);
