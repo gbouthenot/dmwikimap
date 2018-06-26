@@ -1,4 +1,4 @@
-<?
+<?php
 require_once("Gb/Session.php");
 require_once("models/Auth.php");
 require_once("models/Map.php");

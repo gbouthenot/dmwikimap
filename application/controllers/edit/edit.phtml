@@ -40,17 +40,17 @@ mapId   = <?= $mapId ?>;
     <div class='mainmap'>
         <table class="map">
             <caption>
-                <? if ($urllevelup): ?>
+                <?php if ($urllevelup): ?>
                     <a href='<?= $urllevelup ?>'><span class='tile tile-4' title='level up (higher)'></span></a>
-                <? else: ?>
+                <?php else: ?>
                     <span class='emptytile'></span>
-                <? endif; ?>
+                <?php endif; ?>
                 Map of <?= $mapName ?>
-                <? if ($urlleveldown): ?>
+                <?php if ($urlleveldown): ?>
                     <a href='<?= $urlleveldown ?>'><span class='tile tile-3' title='level down (deeper)'></span></a>
-                <? else: ?>
+                <?php else: ?>
                     <span class='emptytile'></span>
-                <? endif; ?>
+                <?php endif; ?>
             </caption>
             <tbody>
                 <!-- Dynamically filled with javascript -->
@@ -107,10 +107,10 @@ mapId   = <?= $mapId ?>;
                "else"=>"alert(\"Please fill the comment.\")")
            ) ?>
 
-       <? if ($fShowDelete): ?>
+       <?php if ($fShowDelete): ?>
            <br />
            <?= ajaxSubmit($urlDelete, "'savetargetid'", "Delete this version", "{mapid:mapId}", array("condition"  => "confirm(\"You're gonna delete the version shown juste above.\")")) ?>
-       <? endif; ?>
+       <?php endif; ?>
 
        <div id='savetargetid' class='savetarget'>
        </div>
