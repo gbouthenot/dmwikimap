@@ -82,7 +82,12 @@ Class Gb_Mvc
         $rooturl=$match[1];                       //       /maps/
 
         $href="";
-        $href.=$_SERVER["SERVER_PORT"]==443 ? "https":"http";
+        $href.=(
+            $_SERVER["SERVER_PORT"]==443 ||
+            (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+            (isset($_SERVER['HTTP_X_SSL']) && $_SERVER['HTTP_X_SSL'] === 'true')
+            ) ? "https":"http";
+
         $href.="://";
         $href.=$_SERVER["SERVER_NAME"];
         $href.=$_SERVER["SERVER_PORT"]!=80 ? ":".$_SERVER["SERVER_PORT"] : "";
@@ -100,7 +105,7 @@ Class Gb_Mvc
         }
 
         //echo "script: $script<br />req0: $req0<br />req: $req<br />match: ".print_r($match,true)."<br />href: $href<br />req2: $req2<br />args: ".print_r($args,true)."<br />rooturl: $rooturl<br />";
-        //exit(0);
+        //phpinfo();exit(0);
 
         $this->_args=new Gb_Args($args);
         $this->_href=$href;
