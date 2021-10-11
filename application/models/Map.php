@@ -38,14 +38,22 @@ Class Map
     protected function _getWikiPage($pagetitle)
     {
         $sql="
-            SELECT old_text
+            SELECT content_address
             FROM page
-            JOIN revision ON rev_id=page_latest AND rev_page=page_id
-            JOIN text on old_id=rev_text_id
-            WHERE page_namespace=0 AND page_title=?
+            JOIN revision ON rev_id=page_latest
+            JOIN content ON content_sha1=rev_sha1
+            WHERE page_title=?
         ";
         
-        $page=$this->_db->retrieve_one($sql, array($pagetitle), "old_text");
+        $page=$this->_db->retrieve_one($sql, array($pagetitle), "content_address");
+        if ($page===false || substr($page, 0, 3) !== "tt:") {
+            return "";
+        }
+
+        $revid = substr($page,3);
+        $sql="SELECT old_text FROM text WHERE old_id=?";
+        
+        $page=$this->_db->retrieve_one($sql, $revid, "old_text");
         if ($page===false) {
             return "";
         }
@@ -159,26 +167,15 @@ Class Map
         if (self::$_notes !== null) {
             return;
         }
-//        $wikipage=$this->_getWikiPage("$dungeonName/Levels_notes");
+        $wikipage=$this->_getWikiPage("$dungeonName/Levels_notes");
+        
         
         $cacheWiki=new Gb_Cache("CacheWikiPage$dungeonName", 30);
-        
-        if (!isset($cacheWiki->wikipage)) {
-            $wikipage="";
-            $url="http://dmwiki.atomas.com/w/api.php?action=parse&format=php&page=".$dungeonName."/Levels_notes";
-            Gb_Response::$footer.="file_get_contents()\n";
-            $comments=file_get_contents($url);
-            $comments=unserialize($comments);
-            if (isset($comments["parse"]["text"]["*"])) {
-                $wikipage=$comments["parse"]["text"]["*"];
-            }
-            $cacheWiki->wikipage=$wikipage;
-        }
-        $wikipage=$cacheWiki->wikipage;
-        
+        $cacheWiki->wikipage=$wikipage;
+
         $cacheNotes=new Gb_Cache("CacheWikiNotes".md5($wikipage), 9999);
         
-        if (!isset($cacheNotes->notes)) {
+        if (true || !isset($cacheNotes->notes)) {
             $wikipage=str_replace("</p>","\n"  ,  $wikipage);
             $wikipage=str_replace("<p>", "",      $wikipage);
             $wikipage=str_replace("\n\n","\n",    $wikipage);
@@ -230,19 +227,15 @@ Class Map
             $aComments=array();
             $currentlevel=null;
             foreach ($lines[0] as $line) {
-                if ( (strcasecmp(substr($line, 0, 3), '<h3')==0)
-                     && (strcasecmp(substr($line, -5), '</h3>')==0)
-                     && ( false !== ($pos=strpos($line, "<span class=\"mw-headline\" id=\"Level_")) )
-                   ) {
-                    $currentlevel=(int) substr($line, $pos+36, 2);
+                if ( 1 === preg_match('/^=== (Level (\d{1,2}).*) ===$/', $line, $matches)) {
+                    $currentlevel=(int) $matches[2];
                 }
-                //if ( strcasecmp(substr($line, 0, 11), "[[Category:") == 0 ) {continue;}
                 if ($currentlevel===null) {continue;}
                 $aComments[$currentlevel][]=$line;
             }
             // join comments with newline (one entry per level)
             foreach ($aComments as $level=>$comments) {
-                $aComments[$level]=implode("\n", $comments);
+                $aComments[$level]=implode("<br>\n", $comments);
             }
             $cacheNotes->comments=$aComments;
         }
