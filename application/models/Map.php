@@ -35,8 +35,9 @@ Class Map
         $this->_db=new Gb_Db( iniGetDbparams() );
     }
     
-    protected function _getWikiPage($pagetitle)
+    protected function _getWikiPageRaw($pagetitle)
     {
+        Gb_Response::$footer.="getWikiPageRaw()\n";
         $sql="
             SELECT content_address
             FROM page
@@ -44,7 +45,6 @@ Class Map
             JOIN content ON content_sha1=rev_sha1
             WHERE page_title=?
         ";
-        
         $page=$this->_db->retrieve_one($sql, array($pagetitle), "content_address");
         if ($page===false || substr($page, 0, 3) !== "tt:") {
             return "";
@@ -52,15 +52,27 @@ Class Map
 
         $revid = substr($page,3);
         $sql="SELECT old_text FROM text WHERE old_id=?";
-        
         $page=$this->_db->retrieve_one($sql, $revid, "old_text");
         if ($page===false) {
             return "";
         }
-        
         return $page;
     }
-    
+
+    protected function _getWikiPageRendered($pagetitle)
+    {
+        Gb_Response::$footer.="getWikiPageRendered()\n";
+        $page = "";
+        try {
+            $url="http://wiki/w/api.php?action=parse&prop=text&format=php&page=$pagetitle";
+            $content = file_get_contents($url);
+            $content = unserialize($content);
+            $page = $content["parse"]["text"]["*"];
+        } catch (Exception $e) {
+        }
+        return $page;
+    }
+
     protected function _getCells($dungeonName, $levelNumber)
     {
         $levelNumber=(int) $levelNumber;
@@ -167,22 +179,30 @@ Class Map
         if (self::$_notes !== null) {
             return;
         }
-        $wikipage=$this->_getWikiPage("$dungeonName/Levels_notes");
-        
-        
-        $cacheWiki=new Gb_Cache("CacheWikiPage$dungeonName", 30);
-        $cacheWiki->wikipage=$wikipage;
 
-        $cacheNotes=new Gb_Cache("CacheWikiNotes".md5($wikipage), 9999);
-        
-        if (true || !isset($cacheNotes->notes)) {
-            $wikipage=str_replace("</p>","\n"  ,  $wikipage);
-            $wikipage=str_replace("<p>", "",      $wikipage);
-            $wikipage=str_replace("\n\n","\n",    $wikipage);
-            $wikipage=str_replace("\n\n","\n",    $wikipage);
-            $wikipage=str_replace("\n\n","\n",    $wikipage);
-            $wikipage=str_replace("\n\n","\n",    $wikipage);
-            
+        // cache raw content for 30 seconds
+        $cacheWikiRaw = new Gb_Cache("CacheWikiPageRaw$dungeonName", 5);
+        if (!isset($cacheWikiRaw->wikipage)) {
+            $wikipage = $this->_getWikiPageRaw("$dungeonName/Levels_notes");
+            $cacheWikiRaw->wikipage = $wikipage;
+        }
+
+        // cache rendered content for 9999 seconds (2.7 hours)
+        $cacheNotes = new Gb_Cache("CacheWikiRendered".md5($cacheWikiRaw->wikipage), 9999);
+        if (!isset($cacheNotes->wikipage)) {
+            $wikipage = $this->_getWikiPageRendered("$dungeonName/Levels_notes");
+            $cacheNotes->wikipage = $wikipage;
+        }
+        $wikipage = $cacheNotes->wikipage;
+
+        if (!isset($cacheNotes->notes)) {
+            $wikipage = str_replace("</p>","\n"  ,  $wikipage);
+            $wikipage = str_replace("<p>", "",      $wikipage);
+            $wikipage = str_replace("\n\n","\n",    $wikipage);
+            $wikipage = str_replace("\n\n","\n",    $wikipage);
+            $wikipage = str_replace("\n\n","\n",    $wikipage);
+            $wikipage = str_replace("\n\n","\n",    $wikipage);
+
             /*
             $wikipage="
             bla\n
@@ -193,7 +213,7 @@ Class Map
             {7,8,99}    TTTTTTTTTTTT <br><br /><br><br /><br><br />\n
             ";
             */
-            
+
             $lines=array();
             preg_match_all('/^\{(\d{1,2},\d{1,2},\d{1,2})\}\s*(.+?)\s*(?:<br>|<br \/>)*$/m', $wikipage, $lines);
             // Commentaire regexp:
@@ -205,9 +225,8 @@ Class Map
             //        (?:<br>|<br \/>)*               : éventuellement des <br> ou <br /> (ne pas capturer)
             //        $/                              : fin de ligne
             //        m                               : traite ligne par ligne
-            
             //echo print_r($lines,true);
-            
+
             $aNotes=array();
             foreach ($lines[1] as $index=>$coords) {
                 list($level, $x, $y)=explode(",", $coords);
@@ -215,32 +234,37 @@ Class Map
                 //$aNotes[$level][$x][$y]=$text;
                 $aNotes[$level][]=array(array($x, $y), $text);
             }
-            $cacheNotes->notes=$aNotes;
-            
-            
-            
+            $cacheNotes->notes = $aNotes;
+
             // keep only the lines NOT starting with {
             $lines=array();
             preg_match_all('/^[^{].+/m', $wikipage, $lines);
-            
+
             // build comments table
             $aComments=array();
             $currentlevel=null;
             foreach ($lines[0] as $line) {
-                if ( 1 === preg_match('/^=== (Level (\d{1,2}).*) ===$/', $line, $matches)) {
-                    $currentlevel=(int) $matches[2];
+                // if ( 1 === preg_match('/^=== (Level (\d{1,2}).*) ===$/', $line, $matches)) {
+                //     $currentlevel=(int) $matches[2];
+                // }
+                if ( (strcasecmp(substr($line, 0, 3), '<h3')==0)
+                     && (strcasecmp(substr($line, -5), '</h3>')==0)
+                     && ( false !== ($pos=strpos($line, "<span class=\"mw-headline\" id=\"Level_")) )
+                   ) {
+                    $currentlevel=(int) substr($line, $pos+36, 2);
                 }
                 if ($currentlevel===null) {continue;}
                 $aComments[$currentlevel][]=$line;
             }
             // join comments with newline (one entry per level)
             foreach ($aComments as $level=>$comments) {
-                $aComments[$level]=implode("<br>\n", $comments);
+                $aComments[$level]=implode("\n", $comments);
             }
-            $cacheNotes->comments=$aComments;
+            $cacheNotes->comments = $aComments;
         }
-        self::$_comments=$cacheNotes->comments;
-        self::$_notes=$cacheNotes->notes;
+
+        self::$_comments = $cacheNotes->comments;
+        self::$_notes = $cacheNotes->notes;
     }
     
     

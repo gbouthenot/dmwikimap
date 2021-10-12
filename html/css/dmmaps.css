@@ -188,3 +188,11 @@ div#versions {
 background:url(handlertest.png);
 }
 */
+
+.Gb_footer {
+    white-space: pre;
+    font-family: monospace;
+    font-size: 8pt;
+}
+
+#leveloverview ul { margin:0; }
