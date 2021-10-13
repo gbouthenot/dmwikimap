@@ -105,7 +105,7 @@ Class Gb_Mvc
         }
 
         //echo "script: $script<br />req0: $req0<br />req: $req<br />match: ".print_r($match,true)."<br />href: $href<br />req2: $req2<br />args: ".print_r($args,true)."<br />rooturl: $rooturl<br />";
-        //phpinfo();exit(0);
+        //exit(0);
 
         $this->_args=new Gb_Args($args);
         $this->_href=$href;
