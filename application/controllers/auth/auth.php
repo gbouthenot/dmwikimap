@@ -26,7 +26,7 @@ if ($form->isPost() && $action==="login" && $form->validate()===true)
 {
     $login=$auth->login($form->getElem("login")->value(), $form->getElem("password")->value());
     if ($login === false) {
-        $message="Wrong creditentials";
+        $message="Wrong creditentials.<br>Try to log in the wiki first.";
     }
 }
 

@@ -49,7 +49,7 @@ Class Auth
     }
     
     /**
-     * renvoie le login de l'utilisateur ou false si non loggué
+     * renvoie le login de l'utilisateur ou false si non logguÃ©
      *
      * @return string|false
      */
@@ -66,7 +66,7 @@ Class Auth
     }
     
     /**
-     * renvoie l'id de l'utilisateur ou false si non loggué
+     * renvoie l'id de l'utilisateur ou false si non logguÃ©
      *
      * @return string|false
      */
@@ -93,7 +93,9 @@ Class Auth
         Gb_Log::logInfo("log attempt for $username", null, false);
         $db=$this->_getDb();
         
-        // voir wikimedia includes/User.php
+        // see wikimedia includes/User.php
+        // only support for 'A' and 'B' types
+        // pbkdf2 requires https://github.com/curzon01/mysql_PBKDF2 (which is SLOW !)
         $sql="
 SELECT user_id, user_name
 FROM user
