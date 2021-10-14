@@ -43,7 +43,7 @@ ul {
     padding-left: 1.7em;
 }
 .main {
-    width:1100px;    
+/*    width:1300px; */
 }
 .mainmap {
     float:left;
@@ -51,7 +51,7 @@ ul {
 .rightpane {
     float:left;
     margin-left:10px;
-    width:510px;
+    width:710px;
 }
 .map {
     border-collapse: collapse;

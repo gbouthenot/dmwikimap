@@ -70,8 +70,9 @@ mapId   = <?= $mapId ?>;
     <div class="rightpane">
         <div style='text-align:right;'><a href='<?= $urlswitch ?>'>switch to view mode</a></div>
 
-        <div id='infobox'>
-            <table id="palette" class="map">
+        <div>
+            <div id='tileselect'>Tileset : <select id='tilesetselect'><option value="tiles_64.png">default</option><option value="tiles_csbuild.png">CSBuild 2007</option><option value="tiles.png">CSBuild 2005</option></select></div>
+            <table id="palette" cellspacing='4'>
                 <tbody>
                     <!-- Dynamically filled with javascript -->
                </tbobdy>
@@ -79,8 +80,6 @@ mapId   = <?= $mapId ?>;
             <div class="tooldesc">
                 Tool currently selected : <span>none</span>
             </div>
-
-            Tileset : <select id='tilesetselect'><option value="tiles_64.png">default</option><option value="tiles_csbuild.png">CSBuild 2007</option><option value="tiles.png">CSBuild 2005</option></select>
         </div>
 
 

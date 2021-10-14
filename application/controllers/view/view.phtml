@@ -78,18 +78,20 @@ include("controllers/shared/header.phtml");
             </span>
         </div>
 
+        <div id='tileselect' style='text-align:right;'>Tileset : <select id='tilesetselect'><option value="tiles_64.png">default</option><option value="tiles_csbuild.png">CSBuild 2007</option><option value="tiles.png">CSBuild 2005</option></select></div>
+
         <div id='versions'>
             <!-- Dynamically filled with javascript -->
         </div>
 
     </div><!-- .mainmap -->
-    
+
     <div class="rightpane">
-        <div style='text-align:right;'><a id="switchtoeditmode" href='#'>switch to edit mode</a></div>
-        <div style='text-align:right;'><a href='<?= $urleditnotes ?>' target='_blank'>edit level notes</a></div>
-        
-        <div id='infobox'>
-            Tileset : <select id='tilesetselect'><option value="tiles_64.png">default</option><option value="tiles_csbuild.png">CSBuild 2007</option><option value="tiles.png">CSBuild 2005</option></select>
+
+        <div id='rightheader' style='position:relative'>
+            <div style='display:inline-block; position:absolute; right:0;'>
+                <a href='<?= $urleditnotes ?>' target='_blank'>edit level notes</a> | <a id="switchtoeditmode" href='#'>switch to edit mode</a>
+            </div>
         </div>
 
         <div id='leveloverview'>
