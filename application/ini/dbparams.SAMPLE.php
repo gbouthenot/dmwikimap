@@ -10,3 +10,8 @@ function iniGetDbparams()
         "name"=>"DBNAME"
     );
 }
+
+function iniGetWikiApiUrl()
+{
+    return "https://dmwiki.atomas.com/w/api.php";
+}

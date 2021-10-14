@@ -11,12 +11,12 @@ Class Map
      * @var Gb_Db
      */
     protected $_db;
-    
+
     /**
      * @var array [level] = array( array(array(x,y),"note")),... )
      */
     protected static $_notes;
-    
+
     protected static $_comments;
 
     protected $_dungeonName;
@@ -29,12 +29,12 @@ Class Map
     protected $_mapuserdatemodif;
     protected $_mapusername;
     protected $_mapusercomment;
-    
+
     protected function _initDb()
     {
         $this->_db=new Gb_Db( iniGetDbparams() );
     }
-    
+
     protected function _getWikiPageRaw($pagetitle)
     {
         Gb_Response::$footer.="getWikiPageRaw()\n";
@@ -64,7 +64,7 @@ Class Map
         Gb_Response::$footer.="getWikiPageRendered()\n";
         $page = "";
         try {
-            $url="http://wiki/w/api.php?action=parse&prop=text&format=php&page=$pagetitle";
+            $url = iniGetWikiApiUrl() . "?action=parse&prop=text&format=php&page=$pagetitle";
             $content = file_get_contents($url);
             $content = unserialize($content);
             $page = $content["parse"]["text"]["*"];
@@ -82,9 +82,9 @@ Class Map
         // Level should be 2-char long, (00 to 99)
         $num=str_pad($levelNumber, 2, "0", STR_PAD_LEFT);
         $levelid="$dungeonName/Level$num";
-        
+
         $aVersions=array();
-        
+
         $sql="SELECT cma_id, cma_user_id, user_name, cma_datemodif, cma_comment, cma_cells FROM cellmap JOIN user ON user_id=cma_user_id WHERE cma_levelid=? ORDER BY cma_id DESC";
         $page=$this->_db->retrieve_all($sql, array($levelid));
         if (count($page)==0) {
@@ -117,11 +117,11 @@ Class Map
                 $cells=$page[0]["cma_cells"];
             }
         }
-        
+
         $this->_versions=$aVersions;
         return $cells;
     }
-    
+
     protected function _setCells($dungeonName, $levelNumber, $cells, $comment)
     {
         $levelNumber=(int) $levelNumber;
@@ -130,9 +130,9 @@ Class Map
         }
         // Level should be 2-char long, (00 to 99)
         $num=str_pad($levelNumber, 2, "0", STR_PAD_LEFT);
-        
+
         $levelid="$dungeonName/Level$num";
-        
+
         $aInsert = array(
             "cma_levelid"=>$levelid,
             "cma_cells"=>$cells,
@@ -140,55 +140,55 @@ Class Map
             "cma_datemodif"=>new Zend_Db_Expr("NOW()"),
             "cma_comment"=>$comment
         );
-        
+
         Gb_Log::logInfo("setCells $levelid, comment:$comment", null, false);
         Gb_Log::logDebug("insert into cellmap", $aInsert, false);
         $this->_db->insert("cellmap", $aInsert);
         $this->_cells=$cells;
     }
-    
-    
+
     protected function _initCells($dungeonName, $levelNumber)
     {
         $cells=$this->_getCells($dungeonName, $levelNumber);
         $aCells1=explode(",", $cells);
-        
+
 
         if (count($aCells1)==32*32) {
             $w=$h=32;
         } else {
             throw new Exception("Unknown map size");
         }
-        
+
         $this->_size=array($w, $h);
-        
+
 /*
         for ($y=0; $y<$h; $y++) {
             for ($x=0; $x<$w; $x++) {
                 $aCells2[$y][$x]=$aCells1[$y*$w+$x];
             }
         }
-        
         $this->cells=$aCells2;
 */
         $this->_cells=$aCells1;
     }
-    
+
     protected function _initNotes($dungeonName)
     {
         if (self::$_notes !== null) {
             return;
         }
 
-        // cache raw content for 30 seconds
-        $cacheWikiRaw = new Gb_Cache("CacheWikiPageRaw$dungeonName", 5);
+        $fDisableCache = false;
+
+        // cache raw content (wiki sql database) for 15 seconds
+        $cacheWikiRaw = new Gb_Cache("CacheWikiPageRaw$dungeonName", 15, $fDisableCache);
         if (!isset($cacheWikiRaw->wikipage)) {
             $wikipage = $this->_getWikiPageRaw("$dungeonName/Levels_notes");
             $cacheWikiRaw->wikipage = $wikipage;
         }
 
-        // cache rendered content for 9999 seconds (2.7 hours)
-        $cacheNotes = new Gb_Cache("CacheWikiRendered".md5($cacheWikiRaw->wikipage), 9999);
+        // cache rendered content for 7200 seconds (2 hours), based on rawcontent
+        $cacheNotes = new Gb_Cache("CacheWikiRendered".md5($cacheWikiRaw->wikipage), 7200, $fDisableCache);
         if (!isset($cacheNotes->wikipage)) {
             $wikipage = $this->_getWikiPageRendered("$dungeonName/Levels_notes");
             $cacheNotes->wikipage = $wikipage;
@@ -266,14 +266,7 @@ Class Map
         self::$_comments = $cacheNotes->comments;
         self::$_notes = $cacheNotes->notes;
     }
-    
-    
-    
-    
-    
-    
-    
-    
+
     public function __construct($dungeonName, $levelNumber=null)
     {
         $this->_initDb();
@@ -291,15 +284,14 @@ Class Map
             $levelNumber=substr($namelevel[1], 5);
             $this->_mapid=$mapid;
         }
-        
+
         $dungeonName=ucfirst(strtolower($dungeonName));
         $this->_dungeonName=$dungeonName;
         $this->_levelNumber=(int) $levelNumber;
         $this->_initNotes($dungeonName);
         $this->_initCells($dungeonName, $levelNumber);
     }
-    
-    
+
     public function getNotes()
     {
         if (isset(self::$_notes[$this->_levelNumber])) {
@@ -316,12 +308,12 @@ Class Map
         }
         return $retcomments;
     }
-    
+
     public function getVersions()
     {
         return $this->_versions;
     }
-    
+
     public function getDungeonName()
     {
         return $this->_dungeonName;
@@ -331,7 +323,7 @@ Class Map
     {
         return $this->_levelNumber;
     }
-    
+
     public function getSize()
     {
         return $this->_size;
@@ -365,7 +357,7 @@ Class Map
     {
         return $this->_mapusercomment;
     }
-    
+
     public function getWidth()
     {
         return $this->_size[0];
@@ -375,12 +367,12 @@ Class Map
     {
         return $this->_size[1];
     }
-    
+
     public function getCells()
     {
         return $this->_cells;
     }
-    
+
     public function setCells($cells, $comment)
     {
         return $this->_setCells($this->_dungeonName, $this->_levelNumber, $cells, $comment);
@@ -396,7 +388,7 @@ Class Map
         Gb_Log::logNotice("delete $levelid by $user, $date, cma_id=$cma_id", null, false);
         $this->_db->delete("cellmap", array($this->_db->quoteInto("cma_id=?", $this->_mapid)) );
     }
-    
+
 }
 
 
