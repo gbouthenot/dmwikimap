@@ -201,3 +201,5 @@ So there are multiple <ul> instead of one, and there is padding between them.
 Remove this margin.
 */
 #leveloverview ul { margin:0; }
+#forkme { width: 100%; text-align:right; color:#aaa; font-size:90%; }
+#forkme a { color:inherit; }
